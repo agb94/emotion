@@ -35,8 +35,8 @@ if __name__ == "__main__":
             # Draw a rectangle around the faces
             for (x, y, w, h) in faces:
                 crop_img = frame[y:(y+h), x:(x+w)]
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.imwrite(crop_dir + "{}-x{}y{}w{}h{}.jpg".format(counter, x, y, w, h), crop_img)
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
