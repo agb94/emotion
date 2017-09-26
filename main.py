@@ -19,6 +19,7 @@ if __name__ == "__main__":
     counter = 0
     while(cap.isOpened()):
         ret, frame = cap.read()
+        msec = cap.get(cv2.CAP_PROP_POS_MSEC)
         cv2.imshow('frame', frame)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
@@ -35,7 +36,7 @@ if __name__ == "__main__":
             # Draw a rectangle around the faces
             for (x, y, w, h) in faces:
                 crop_img = frame[y:(y+h), x:(x+w)]
-                cv2.imwrite(crop_dir + "{}-x{}y{}w{}h{}.jpg".format(counter, x, y, w, h), crop_img)
+                cv2.imwrite(crop_dir + "{}-{}-x{}y{}w{}h{}.jpg".format(msec, counter, x, y, w, h), crop_img)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
