@@ -9,3 +9,8 @@ Emotion API test
 ```
 python emotion_api.py [image_path]
 ```
+
+Character Analyzer
+```
+python character_analyzer.py yellows1ep01-oracle.tsv
+```
