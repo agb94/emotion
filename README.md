@@ -12,5 +12,5 @@ python emotion_api.py [image_path]
 
 Character Analyzer
 ```
-python character_analyzer.py yellows1ep01-oracle.tsv
+python character_analyzer.py [metadata_file_path]
 ```
