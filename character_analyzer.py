@@ -112,7 +112,7 @@ def character_analyzer(metadata_path, overview_path, clip_path, frame_interval=3
 
 def main():
     if len(sys.argv) < 2:
-        print ("[Usage] python main.py [metadata_file_name]")
+        print ("[Usage] python character_analyzer.py [metadata_file_name]")
         sys.exit()
     # yellows1ep01-oracle.tsv
     metadata_path = sys.argv[1]
