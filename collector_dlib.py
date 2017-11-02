@@ -58,8 +58,8 @@ if __name__ == "__main__":
             win.clear_overlay()
             win.set_image(frame)
             win.add_overlay(dets)
+            cv2.imshow('frame', frame)
 
-        #cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         frame_counter += 1

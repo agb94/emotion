@@ -50,7 +50,7 @@ def get_relationship(appearance):
                 if character == other:
                     continue
                 key = relationship_key(character, other)
-                relationship[key] += weight * len(list(filter(lambda f: f in range(start+1, end), appearance[other])))
+                relationship[key] += weight * len(list(filter(lambda f: f in range(start, end+1), appearance[other])))
     return relationship
 
 def draw_relationship_graph(appearance, relationship):
@@ -88,6 +88,7 @@ metadata = util.parse_metadata_file('yellows1ep01-oracle.tsv')
 appearance = get_appearance(metadata)
 relationship = get_relationship(appearance)
 sorted_relationship = sorted(relationship.items(), key=operator.itemgetter(1))
+sorted_relationship.reverse()
 print(sorted_relationship)
   
-draw_relationship_graph(appearance, relationship)
+#draw_relationship_graph(appearance, relationship)
