@@ -17,20 +17,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import util
 import time
-
-start = time.time()
-
 import argparse
 import cv2
 import itertools
 import os
-
-import numpy as np
-np.set_printoptions(precision=2)
-
 import openface
+import numpy as np
+import scipy as sp
+from matplotlib import pyplot as plt
+from scipy.spatial.distance import pdist
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster, cut_tree
+IMG_DIM = 96
+np.set_printoptions(precision=2)
 
 fileDir = os.path.dirname(os.path.realpath(__file__))
 modelDir = os.path.join(fileDir, 'models')
@@ -38,71 +38,64 @@ dlibModelDir = os.path.join(modelDir, 'dlib')
 openfaceModelDir = os.path.join(modelDir, 'openface')
 
 parser = argparse.ArgumentParser()
-
 parser.add_argument('imgs', type=str, nargs='+', help="Input images.")
-parser.add_argument('--dlibFacePredictor', type=str, help="Path to dlib's face predictor.",
-                    default=os.path.join(dlibModelDir, "shape_predictor_68_face_landmarks.dat"))
-parser.add_argument('--networkModel', type=str, help="Path to Torch network model.",
-                    default=os.path.join(openfaceModelDir, 'nn4.small2.v1.t7'))
-                    #default=os.path.join(openfaceModelDir, 'nn4.def.lua'))
-parser.add_argument('--imgDim', type=int,
-                    help="Default image dimension.", default=96)
-parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--metaData')
 
 args = parser.parse_args()
 
-if args.verbose:
-    print("Argument parsing and loading libraries took {} seconds.".format(
-        time.time() - start))
+align = openface.AlignDlib(os.path.join(dlibModelDir, "shape_predictor_68_face_landmarks.dat"))
+net = openface.TorchNeuralNet(os.path.join(openfaceModelDir, 'nn4.small2.v1.t7'), IMG_DIM)
 
-start = time.time()
-align = openface.AlignDlib(args.dlibFacePredictor)
-net = openface.TorchNeuralNet(args.networkModel, args.imgDim)
-if args.verbose:
-    print("Loading the dlib and OpenFace models took {} seconds.".format(
-        time.time() - start))
-
-
-def getRep(imgPath):
-    if args.verbose:
-        print("Processing {}.".format(imgPath))
-    bgrImg = cv2.imread(imgPath)
+no_face = set()
+def getRep(img_path):
+    bgrImg = cv2.imread(img_path)
     if bgrImg is None:
-        raise Exception("Unable to load image: {}".format(imgPath))
+        no_face.add(img_path)
+        print("Unable to load image: {}".format(img_path))
+        return None
     rgbImg = cv2.cvtColor(bgrImg, cv2.COLOR_BGR2RGB)
-
-    if args.verbose:
-        print("  + Original size: {}".format(rgbImg.shape))
-
-    start = time.time()
     bb = align.getLargestFaceBoundingBox(rgbImg)
     if bb is None:
-        raise Exception("Unable to find a face: {}".format(imgPath))
-    if args.verbose:
-        print("  + Face detection took {} seconds.".format(time.time() - start))
-
-    start = time.time()
-    alignedFace = align.align(args.imgDim, rgbImg, bb,
+        no_face.add(img_path)
+        print("Unable to find a face: {}".format(img_path))
+        return None
+    aligned_face = align.align(IMG_DIM, rgbImg, bb,
                               landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
-    if alignedFace is None:
-        raise Exception("Unable to align image: {}".format(imgPath))
-    if args.verbose:
-        print("  + Face alignment took {} seconds.".format(time.time() - start))
-
-    start = time.time()
-    rep = net.forward(alignedFace)
-    if args.verbose:
-        print("  + OpenFace forward pass took {} seconds.".format(time.time() - start))
-        print("Representation:")
-        print(rep)
-        print("-----\n")
+    if aligned_face is None:
+        no_face.add(img_path)
+        print("Unable to align image: {}".format(img_path))
+        return None
+    rep = net.forward(aligned_face)
     return rep
 
-for (img1, img2) in itertools.combinations(args.imgs, 2):
-    try:
-        d = getRep(img1) - getRep(img2)
-        print("Comparing {} with {}.".format(img1, img2))
-        print("  + Squared l2 distance between representations: {:0.3f}".format(np.dot(d, d)))
-    except:
-        print("Error: ", (img1, img2))
+if args.metaData:
+    metadata = util.parse_metadata_file_to_dict(args.metaData)
+
+img_paths = list()
+X = None
+for img in args.imgs:
+    print ("processing {}".format(img))
+    if args.metaData and img not in metadata:
         continue
+    rep = getRep(img)
+    if rep is not None:
+        img_paths.append(img)
+        if X is None:
+            X = rep
+        else:
+            X = np.vstack((X, rep))
+
+distances = pdist(X, lambda u, v: np.dot(u - v, u - v))
+Z = linkage(distances, 'average')
+clusters = dict()
+for k in range(1, 10):
+    clusters = dict()
+    T = fcluster(Z, k, 'maxclust')
+    print("K: " + str(k))
+    for i in range(len(img_paths)):
+        char_id = metadata[img_paths[i]]['character_id']
+        clusters[T[i]] = clusters.get(T[i], dict())
+        clusters[T[i]][char_id] = clusters[T[i]].get(char_id, 0) + 1
+    for c in clusters:
+        print (c, sorted(clusters[c].items(), key=lambda x: -1 * x[1]))
+
