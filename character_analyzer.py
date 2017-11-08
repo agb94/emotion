@@ -94,7 +94,7 @@ def character_analyzer(metadata_path, overview_path, clip_path, frame_interval=3
         importance = [imp * cnt for (imp, cnt) in zip(importance, character_count)]
         
         # write on characters_overview.tsv
-        writing = "Character ID\tAppearance Count\tLevel of Importance"
+        writing = "character_id\tappearance_count\tlevel_of_importance"
         overview.write(writing + "\n")
 
         for i in range(num_chars):
@@ -102,7 +102,7 @@ def character_analyzer(metadata_path, overview_path, clip_path, frame_interval=3
             overview.write(line + "\n")
         
         # write on clip.tsv
-        writing = "Character ID\tFrame Range"
+        writing = "character_id\tframe_range"
         clip.write(writing + "\n")
         
         for i in range(len(frame_list)):
