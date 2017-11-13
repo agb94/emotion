@@ -25,16 +25,30 @@ import itertools
 import os
 import openface
 import numpy as np
-from shutil import copyfile
-from matplotlib import pyplot as plt
 import scipy as sp
 import scipy.cluster.vq
 import scipy.spatial.distance
+from collections import Counter
+from shutil import copyfile
+from matplotlib import pyplot as plt
 from sklearn.cluster import KMeans
 
 IMG_DIM = 96
+np.set_printoptions(precision=2)
 
-def getRep(img_path):
+fileDir = os.path.dirname(os.path.realpath(__file__))
+modelDir = os.path.join(fileDir, 'models')
+dlibModelDir = os.path.join(modelDir, 'dlib')
+openfaceModelDir = os.path.join(modelDir, 'openface')
+align = openface.AlignDlib(os.path.join(dlibModelDir, "shape_predictor_68_face_landmarks.dat"))
+net = openface.TorchNeuralNet(os.path.join(openfaceModelDir, 'nn4.small2.v1.t7'), IMG_DIM)
+
+def mode_finder(numbers):
+    c = Counter(numbers)
+    mode = c.most_common(1)
+    return mode[0][0]
+
+def get_rep(img_path):
     bgrImg = cv2.imread(img_path)
     if bgrImg is None:
         print("Unable to load image: {}".format(img_path))
@@ -52,7 +66,7 @@ def getRep(img_path):
     rep = net.forward(aligned_face)
     return rep
 
-def gap(reps, nrefs=20, ks=range(1, 11)):
+def gap(reps, nrefs=100, ks=range(1, 11)):
     # Input
     # rep: list of representations
     # label: list of labels for each representation
@@ -66,55 +80,41 @@ def gap(reps, nrefs=20, ks=range(1, 11)):
         rands[:,:,i] = rands[:,:,i]*dists+bots
     gaps = sp.zeros((len(ks),))
     for (i,k) in enumerate(ks):
-        (kmc,kml) = sp.cluster.vq.kmeans2(reps, k, minit='points')
+        (kmc,kml) = sp.cluster.vq.kmeans2(reps, k)
         disp = sum([dst(reps[m,:],kmc[kml[m],:]) for m in range(shape[0])])
         refdisps = sp.zeros((rands.shape[2],))
         for j in range(rands.shape[2]):
-            (kmc,kml) = sp.cluster.vq.kmeans2(rands[:,:,j], k, minit='points')
+            (kmc,kml) = sp.cluster.vq.kmeans2(rands[:,:,j], k)
             refdisps[j] = sum([dst(rands[m,:,j],kmc[kml[m],:]) for m in range(shape[0])])
         gaps[i] = scipy.mean(scipy.log(refdisps))-scipy.log(disp)
 
-    return gaps
+    return np.around(gaps, decimals=2)
 
-def firstmax_index(l):
-    if len(l) == 0:
-        return None
-    if len(l) == 1:
-        return 0
+def firstmax_index(l, threshold=0.01):
     prev = None
-    for (i, curr) in enumerate(l):
-        if prev is None:
-            prev = curr
+    for i, now in enumerate(l):
+        if prev is None or now > prev + threshold:
+            prev = now
             continue
-        if not curr > prev:
-            return i - 1
-        prev = curr
-    return len(l) - 1
+        return i - 1
+    return i
 
 if __name__ == "__main__":
-    np.set_printoptions(precision=2)
-
-    fileDir = os.path.dirname(os.path.realpath(__file__))
-    modelDir = os.path.join(fileDir, 'models')
-    dlibModelDir = os.path.join(modelDir, 'dlib')
-    openfaceModelDir = os.path.join(modelDir, 'openface')
-
     parser = argparse.ArgumentParser()
     parser.add_argument('metadata', type=str, help="Metadata file path.")
-    parser.add_argument('--K', type=int)
-
+    parser.add_argument('-K', type=int)
+    parser.add_argument('--start', type=int)
+    parser.add_argument('--end', type=int)
     args = parser.parse_args()
-
-    align = openface.AlignDlib(os.path.join(dlibModelDir, "shape_predictor_68_face_landmarks.dat"))
-    net = openface.TorchNeuralNet(os.path.join(openfaceModelDir, 'nn4.small2.v1.t7'), IMG_DIM)
-
     metadata = util.parse_metadata_file_to_dict(args.metadata)
 
     img_paths = list()
     X = None
     for img in metadata:
+        if args.start is not None and args.end is not None and metadata[img]['frame_number'] not in range(args.start, args.end):
+            continue
         print ("processing {}".format(img))
-        rep = getRep(img)
+        rep = get_rep(img)
         if rep is not None:
             img_paths.append(img)
             if X is None:
@@ -128,10 +128,12 @@ if __name__ == "__main__":
         gap_statistics = gap(X)
         print gap_statistics
         K = firstmax_index(gap_statistics) + 1
-
+            
     print ("K: {}".format(K))
 
-    kmeans = KMeans(n_clusters=K, random_state=0).fit(X)
+
+    (kmc,kml) = sp.cluster.vq.kmeans2(X, K)
+    # kmeans = KMeans(n_clusters=K, random_state=0).fit(X)
     # Debugging
     cluster_dirs = dict()
     for k in range(int(K)):
@@ -142,7 +144,7 @@ if __name__ == "__main__":
 
     for i in range(len(img_paths)):
         img_path = img_paths[i]
-        c = kmeans.labels_[i]
+        c = kml[i]
         metadata[img_paths[i]]['character_id'] = c
         copyfile(img_path, os.path.join(cluster_dirs[c], os.path.basename(img_path)))
 
