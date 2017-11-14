@@ -29,7 +29,7 @@ def parse_metadata_file_to_dict(metadata_file_path):
     return metadata
 
 def write_metadata_file(metadata_file_path, metadata):
-    sorted_metadata = sorted(metadata.items(), key=lambda(t): (t[1]['frame_number'], t[0]))
+    sorted_metadata = sorted(metadata.items(), key=lambda t: (t[1]['frame_number'], t[0]))
     with open(metadata_file_path, 'w') as tsvfile:
         columns = ['image_file_path', 'msec', 'frame_number', 'position', 'character_id'] 
         tsvfile.write("\t".join(columns) + "\n")
