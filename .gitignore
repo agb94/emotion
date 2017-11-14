@@ -7,11 +7,17 @@ __pycache__/
 
 # Videos
 *.avi
+*.mkv
 
 # C extensions
 *.so
 
-crop/*.jpg
+crop/
+crop_dlib/
+
+# Metadata file
+*.tsv
+
 # Distribution / packaging
 .Python
 env/
