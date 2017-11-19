@@ -17,7 +17,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import util
 import time
 import argparse
 import cv2
@@ -32,6 +31,7 @@ from collections import Counter
 from shutil import copyfile
 from matplotlib import pyplot as plt
 from sklearn.cluster import KMeans
+from util import *
 
 IMG_DIM = 96
 np.set_printoptions(precision=2)
@@ -43,25 +43,20 @@ openfaceModelDir = os.path.join(modelDir, 'openface')
 align = openface.AlignDlib(os.path.join(dlibModelDir, "shape_predictor_68_face_landmarks.dat"))
 net = openface.TorchNeuralNet(os.path.join(openfaceModelDir, 'nn4.small2.v1.t7'), IMG_DIM)
 
-def mode_finder(numbers):
-    c = Counter(numbers)
-    mode = c.most_common(1)
-    return mode[0][0]
-
 def get_rep(img_path):
     bgrImg = cv2.imread(img_path)
     if bgrImg is None:
-        print("Unable to load image: {}".format(img_path))
+        # print("Unable to load image: {}".format(img_path))
         return None
     rgbImg = cv2.cvtColor(bgrImg, cv2.COLOR_BGR2RGB)
     bb = align.getLargestFaceBoundingBox(rgbImg)
     if bb is None:
-        print("Unable to find a face: {}".format(img_path))
+        # print("Unable to find a face: {}".format(img_path))
         return None
     aligned_face = align.align(IMG_DIM, rgbImg, bb,
                               landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
     if aligned_face is None:
-        print("Unable to align image: {}".format(img_path))
+        # print("Unable to align image: {}".format(img_path))
         return None
     rep = net.forward(aligned_face)
     return rep
@@ -99,21 +94,15 @@ def firstmax_index(l, threshold=0.01):
         return i - 1
     return i
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('metadata', type=str, help="Metadata file path.")
-    parser.add_argument('-K', type=int)
-    parser.add_argument('--start', type=int)
-    parser.add_argument('--end', type=int)
-    args = parser.parse_args()
-    metadata = util.parse_metadata_file_to_dict(args.metadata)
-
+def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False):
+    metadata = parse_metadata_file_to_dict(metadata_file_path)
     img_paths = list()
     X = None
     for img in metadata:
-        if args.start is not None and args.end is not None and metadata[img]['frame_number'] not in range(args.start, args.end):
+        if start is not None and end is not None and metadata[img]['frame_number'] not in range(start, end):
             continue
-        print ("processing {}".format(img))
+        if debugging:
+            print ("processing {}".format(img))
         rep = get_rep(img)
         if rep is not None:
             img_paths.append(img)
@@ -121,31 +110,40 @@ if __name__ == "__main__":
                 X = rep
             else:
                 X = np.vstack((X, rep))
-
-    if args.K:
-        K = args.K
-    else:
+    if K is None:
         gap_statistics = gap(X)
-        print gap_statistics
+        if debugging:
+            print (gap_statistics)
         K = firstmax_index(gap_statistics) + 1
             
-    print ("K: {}".format(K))
-
+    if debugging:
+        print ("K: {}".format(K))
 
     (kmc,kml) = sp.cluster.vq.kmeans2(X, K)
     # kmeans = KMeans(n_clusters=K, random_state=0).fit(X)
     # Debugging
-    cluster_dirs = dict()
-    for k in range(int(K)):
-        cluster_dir = os.path.join(os.path.dirname(img_paths[0]), str(k))
-        if not os.path.exists(cluster_dir):
-            os.mkdir(cluster_dir)
-        cluster_dirs[k] = cluster_dir
+    if debugging:
+        cluster_dirs = dict()
+        for k in range(int(K)):
+            cluster_dir = os.path.join(os.path.dirname(img_paths[0]), str(k))
+            if not os.path.exists(cluster_dir):
+                os.mkdir(cluster_dir)
+            cluster_dirs[k] = cluster_dir
 
-    for i in range(len(img_paths)):
-        img_path = img_paths[i]
-        c = kml[i]
-        metadata[img_paths[i]]['character_id'] = c
-        copyfile(img_path, os.path.join(cluster_dirs[c], os.path.basename(img_path)))
+        for i in range(len(img_paths)):
+            img_path = img_paths[i]
+            c = kml[i]
+            metadata[img_paths[i]]['character_id'] = c
+            copyfile(img_path, os.path.join(cluster_dirs[c], os.path.basename(img_path)))
 
-    util.write_metadata_file(args.metadata, metadata)
+    write_metadata_file(metadata_file_path, metadata)
+    return K
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('metadata', type=str, help="Metadata file path.")
+    parser.add_argument('-K', type=int)
+    parser.add_argument('--start', type=int)
+    parser.add_argument('--end', type=int)
+    args = parser.parse_args()
+    cluster(args.metadata, start=args.start, end=args.end, K=args.K, debugging=True)

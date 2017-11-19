@@ -35,3 +35,25 @@ def write_metadata_file(metadata_file_path, metadata):
         tsvfile.write("\t".join(columns) + "\n")
         for k, v in sorted_metadata:
             tsvfile.write("{}\t{}\t{}\t{}\t{}\n".format(k, v['msec'], v['frame_number'], v['position'], v['character_id']))
+
+def parse_overview_file(overview_file_path):
+    overview = dict()
+    with open(overview_file_path) as tsvfile:
+        rows = csv.DictReader(tsvfile, dialect='excel-tab')
+        for row in rows:
+            overview[int(row['character_id'])]= {
+                'appearance_count': int(row['appearance_count']),
+                'level_of_importance': float(row['level_of_importance'])
+            }
+    sorted_overview = sorted(overview.items(), key=lambda t: t[1]['level_of_importance'])
+    sorted_overview.reverse()
+    return sorted_overview
+
+def parse_clip_file_to_dict(clip_file_path):
+    clip = dict()
+    with open(clip_file_path) as tsvfile:
+        rows = csv.DictReader(tsvfile, dialect='excel-tab')
+        for row in rows:
+            clip[int(row['character_id'])] = clip.get(int(row['character_id']), list())
+            clip[int(row['character_id'])].append(eval(row['frame_range']))
+    return clip

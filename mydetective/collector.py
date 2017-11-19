@@ -1,9 +1,9 @@
-import util
 import numpy as np
 import cv2
 import sys
 import os
 import dlib
+from .util import *
 
 CROP_DIR = "crop_dlib/"
 IMG_DIM = 96
@@ -53,19 +53,20 @@ def collect(video_file_path, interval=30):
                 'position': str((x,y,w,h)),
                 'character_id': -1
             }
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             face_counter += 1
         win.clear_overlay()
         win.set_image(frame)
         win.add_overlay(dets)
-        cv2.imshow('frame', frame)
+        # cv2.imshow('frame', frame)
         curr_frame += interval
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    util.write_metadata_file(metadata_file_path, metadata)
+    write_metadata_file(metadata_file_path, metadata)
     cap.release()
     cv2.destroyAllWindows()
+    return metadata_file_path
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

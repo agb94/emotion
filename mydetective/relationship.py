@@ -1,17 +1,13 @@
 import operator
-import util
 import math
-try:
-    import matplotlib.pyplot as plt
-except:
-    raise
-import networkx as nx
+from .util import *
 
 def get_appearance(metadata):
     appearance = {}
     for character in set(list(map(lambda row: row['character_id'], metadata))):
-        appearance[character] = list(map(lambda row: row['frame_number'], list(filter(lambda row: row['character_id'] == character, metadata))))
-        appearance[character].sort()
+        if character != -1:
+            appearance[character] = list(map(lambda row: row['frame_number'], list(filter(lambda row: row['character_id'] == character, metadata))))
+            appearance[character].sort()
     return appearance
 
 def get_relationship(appearance):
@@ -53,42 +49,13 @@ def get_relationship(appearance):
                 relationship[key] += weight * len(list(filter(lambda f: f in range(start, end+1), appearance[other])))
     return relationship
 
-def draw_relationship_graph(appearance, relationship):
-    G=nx.Graph()
+def sorted_relationship(metadata_file_path):
+    metadata = parse_metadata_file(metadata_file_path)
+    appearance = get_appearance(metadata)
+    relationship = get_relationship(appearance)
+    sorted_relationship = sorted(relationship.items(), key=operator.itemgetter(1))
+    sorted_relationship.reverse()
+    return sorted_relationship
 
-    for u in appearance:
-        G.add_node(u)
-
-    for key in relationship:
-	u, v = key
-	weight = relationship[key]
-        if weight > 0.01:
-            G.add_edge(u, v, weight=weight)
-
-    pos=nx.spring_layout(G) # positions for all nodes
-
-    # nodes
-    nx.draw_networkx_nodes(G,pos,node_size=350)
-
-    # edges
-    for (u, v, d) in G.edges(data=True):
-        nx.draw_networkx_edges(G, pos, edgelist=[(u,v)], 
-            width=math.ceil(relationship[(u,v)] * 10),
-            edge_color='b'
-        )
-
-    nx.draw_networkx_labels(G,pos,font_size=10,font_family='sans-serif')
-
-    plt.axis('off')
-    plt.savefig("weighted_graph.png") # save as png
-    plt.show() # display
-
-
-metadata = util.parse_metadata_file('yellows1ep01-oracle.tsv')
-appearance = get_appearance(metadata)
-relationship = get_relationship(appearance)
-sorted_relationship = sorted(relationship.items(), key=operator.itemgetter(1))
-sorted_relationship.reverse()
-print(sorted_relationship)
-  
-#draw_relationship_graph(appearance, relationship)
+if __name__ == "__main__":
+    print (sorted_relationship('yellows1ep01-oracle.tsv'))
