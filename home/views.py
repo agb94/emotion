@@ -12,7 +12,6 @@ def analysis(request):
         videoFile = request.GET['videoFile']
         interval = int(request.GET['interval'])
         metadata_file_path = mydetective.collect(videoFile, interval)
-        # metadata_file_path = 'bigbang-5000.tsv'
         K = mydetective.cluster(metadata_file_path)
         data = json.dumps({ 'K': K, 'metadata': metadata_file_path })
         return HttpResponse(data, content_type='application/json')
@@ -24,16 +23,17 @@ def analysis(request):
         return render(request, 'home/analysis.html', { 'videoFile': qd['videoFile'], 'interval': qd['interval'] })
 
 def characters(request):
-    metadata_file_path = 'bigbang-5000.tsv'
+    metadata_file_path = request.GET['metadata']
     overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
     overview = mydetective.parse_overview_file(overview_path)
     clip = mydetective.parse_clip_file_to_dict(clip_path)
-    return render(request, 'home/characters.html', { 'overview': overview, 'clip': clip })
+    return render(request, 'home/characters.html', { 'overview': overview, 'clip': clip, 'metadata': metadata_file_path })
 
 def relationship(request):
-    metadata_file_path = 'bigbang-5000.tsv'
+    metadata_file_path = request.GET['metadata']
     relationships = mydetective.sorted_relationship(metadata_file_path)
-    return render(request, 'home/relationship.html', { 'relationships': relationships })
+    return render(request, 'home/relationship.html', { 'relationships': relationships, 'metadata': metadata_file_path })
 
 def emotion(request):
-    return render(request, 'home/emotion.html')
+    metadata_file_path = request.GET['metadata']
+    return render(request, 'home/emotion.html', { 'metadata': metadata_file_path })
