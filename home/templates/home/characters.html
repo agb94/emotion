@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "home/header.html" %}
+<body>
+  <div class="container">
+    {% include "home/navi.html" with title="Character Overviews" subtitle="" %}
+    <div class="row">
+      <div class="col-md-4">
+        {% include "home/tab.html" %}
+      </div>
+      <div class="col-md-8">
+      {% load static %}
+      {% for char_id, features in overview %}
+        <div class="row">
+          <div class="col-md-3">
+            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
+            <p style="text-align:center; padding:10px;">Character {{ char_id }}</p>
+          </div>
+          <div class="col-md-9">
+            <ul>
+            {% for feature, value in features.iteritems %}
+              <li>{{ feature }}: {{ value }}</li>
+            {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

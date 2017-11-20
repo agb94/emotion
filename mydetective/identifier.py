@@ -124,16 +124,17 @@ def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False):
     # Debugging
     if debugging:
         cluster_dirs = dict()
-        for k in range(int(K)):
+        for k in range(1, int(K) + 1):
             cluster_dir = os.path.join(os.path.dirname(img_paths[0]), str(k))
             if not os.path.exists(cluster_dir):
                 os.mkdir(cluster_dir)
             cluster_dirs[k] = cluster_dir
 
-        for i in range(len(img_paths)):
-            img_path = img_paths[i]
-            c = kml[i]
-            metadata[img_paths[i]]['character_id'] = c
+    for i in range(len(img_paths)):
+        img_path = img_paths[i]
+        c = kml[i] + 1
+        metadata[img_paths[i]]['character_id'] = c
+        if debugging:
             copyfile(img_path, os.path.join(cluster_dirs[c], os.path.basename(img_path)))
 
     write_metadata_file(metadata_file_path, metadata)

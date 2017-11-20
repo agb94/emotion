@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "home/header.html" %}
+<body>
+  <div class="container">
+    {% include "home/navi.html" with title=videoFile subtitle=interval %}
+    <div class="row">
+      <div class="col-md-4" id="tab">
+        {% include "home/tab.html" %}
+      </div>
+      <div class="col-md-8">
+        <p><span id="K"></span> characters are detected.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  var kField = $('span#K');
+  var tab = $('#tab');
+  $.ajax({
+      url : '/analysis',
+      type : 'GET',
+      data : {
+        'videoFile': '{{ videoFile }}',
+        'interval': {{ interval }},
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      dataType:'json',
+      success : function(data) {
+        kField.text(data['K']);
+        $('#tab li a#characters').attr("href", "/characters?metadata=" + escape(data['metadata']));
+        $('#tab li a#relationship').attr("href", "/relationship?metadata=" + escape(data['metadata']));
+        $('#tab li a#emotion').attr("href", "/emotion?metadata=" + escape(data['metadata']));
+      },
+      error : function(request,error)
+      {
+          alert("Request: "+JSON.stringify(request));
+      }
+  });
+})
+</script>

@@ -47,6 +47,11 @@ def get_relationship(appearance):
                     continue
                 key = relationship_key(character, other)
                 relationship[key] += weight * len(list(filter(lambda f: f in range(start, end+1), appearance[other])))
+    if len(relationship.values()) > 0:
+        _max = max(relationship.values())
+        for key in relationship:
+            relationship[key] /= _max
+            relationship[key] *= 100
     return relationship
 
 def sorted_relationship(metadata_file_path):

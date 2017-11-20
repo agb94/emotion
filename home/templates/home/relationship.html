@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "home/header.html" %}
+<body>
+  <div class="container">
+    {% include "home/navi.html" with title="Relationship" subtitle="" %}
+    <div class="row">
+      <div class="col-md-4">
+        {% include "home/tab.html" %}
+      </div>
+      <div class="col-md-8">
+      {% load static %}
+      {% for key, value in relationships %}
+        <div class="row">
+          <div class="col-md-3">
+            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
+            <p style="text-align:center; padding:10px;">Character {{ key.0 }}</p>
+          </div>
+          <div class="col-md-3">
+            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
+            <p style="text-align:center; padding:10px;">Character {{ key.1 }}</p>
+          </div>
+          <div class="col-md-6">
+            <div style="background-color:#50e2ed;width:{{ value }}%;height:50%;border-top-right-radius: 10px;border-bottom-right-radius: 10px;"></div>
+            <p>{{ value }}</p>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

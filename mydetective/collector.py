@@ -5,7 +5,7 @@ import os
 import dlib
 from .util import *
 
-CROP_DIR = "crop_dlib/"
+CROP_DIR = "crop/"
 IMG_DIM = 96
 
 def collect(video_file_path, interval=30):

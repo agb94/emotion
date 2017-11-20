@@ -1,27 +1,6 @@
 import os, sys
 from .util import *
 
-def distinct_characters(metadata_path):
-    """
-    Input:
-        metadata_path:  The path of the metadata file
-    Output:
-        num_chars:      The number of characters (in video)
-    """
-    num_chars = 0
-    with open(metadata_path, "r") as metadata_file:
-        metadata_file.readline()    # First line is an info line.
-        for line in metadata_file:
-            split = line.split("\t")
-            char_id = int(split[4][0])
-
-            if char_id > num_chars:
-                num_chars = char_id
-            else:
-                continue
-
-    return num_chars
-
 def character_analyzer(metadata_path, frame_interval=30):
     """
     Input:
@@ -48,7 +27,7 @@ def character_analyzer(metadata_path, frame_interval=30):
     tmp = { i: list() for i in char_ids }
     importance = { i: 0 for i in char_ids }
     
-    previous_id = 0
+    previous_id = -1
     threshold = 20
 
     with open(overview_path, "w") as overview, open(clip_path, "w") as clip:
@@ -67,7 +46,7 @@ def character_analyzer(metadata_path, frame_interval=30):
                 tmp[char_id].append(current_frame)
             else:
                 # at first
-                if previous_id == 0:
+                if previous_id == -1:
                     tmp[char_id].append(current_frame)
                 else:
                     if len(tmp[char_id]) == 0:
@@ -85,12 +64,12 @@ def character_analyzer(metadata_path, frame_interval=30):
             previous_id = char_id
 
         # Handling remaining frame list
-        for i in range(len(tmp)):
-            if len(tmp[i]) != 0:
-                if tmp[i][0] == tmp[i][-1]:
-                    frame_list[i].append([tmp[i][0]])
+        for char_id in tmp:
+            if len(tmp[char_id]) != 0:
+                if tmp[char_id][0] == tmp[char_id][-1]:
+                    frame_list[char_id].append([tmp[char_id][0]])
                 else:
-                    frame_list[i].append([tmp[i][0], tmp[i][-1]])
+                    frame_list[char_id].append([tmp[char_id][0], tmp[char_id][-1]])
             else:
                 continue
 
@@ -114,9 +93,9 @@ def character_analyzer(metadata_path, frame_interval=30):
         writing = "character_id\tframe_range"
         clip.write(writing + "\n")
         
-        for i in range(len(frame_list)):
-            for frame_range in frame_list[i]:
-                line = "{}\t{}".format(i, tuple(frame_range))
+        for char_id in char_ids:
+            for frame_range in frame_list[char_id]:
+                line = "{}\t{}".format(char_id, tuple(frame_range))
                 clip.write(line + "\n")
 
         return (overview_path, clip_path)

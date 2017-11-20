@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include "home/header.html" %}
+  <body>
+    <div class="container">
+      {% include "home/navi.html" with title="" subtitle="" %}
+      <div class="row">
+        <div class="col-md-4">
+        </div>
+        <div class="col-md-4">
+          <form action="/analysis" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="videoFile">Video file</label><br>
+              <input id="videoFile" type="file" name="videoFile">
+            </div>
+            <div class="form-group">
+              <label for="interval">Interval</label><br>
+              <input id="interval" class="form-control" type="number" name="interval" value=60>
+            </div>
+            <button type="submit" class="btn btn-default">Analyze!</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
