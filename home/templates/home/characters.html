@@ -12,9 +12,11 @@
       {% load static %}
       {% for char_id, features in overview %}
         <div class="row">
+          <p class="character-label">Character {{ char_id }}</p>
+        </div>
+        <div class="row character-card">
           <div class="col-md-3">
             <img src="{% static 'crop/'|add:features.centroid_image %}" style="width: 100%;"/>
-            <p style="text-align:center; padding:10px;">Character {{ char_id }}</p>
           </div>
           <div class="col-md-9">
             <ul>
@@ -30,3 +32,16 @@
   </div>
 </body>
 </html>
+
+<style>
+.character-card {
+  background: rgba(255,255,255,0.1);
+  padding: 20px 5px;
+  margin-bottom: 15px;
+}
+.character-label {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 100;
+  margin-bottom: 10px;
+}

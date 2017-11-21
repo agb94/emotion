@@ -114,8 +114,7 @@ def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False, c
                 X = np.vstack((X, rep))
     if K is None:
         gap_statistics = gap(X)
-        if debugging:
-            print (gap_statistics)
+        print (gap_statistics)
         K = firstmax_index(gap_statistics) + 1
             
     if debugging:

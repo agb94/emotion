@@ -16,7 +16,7 @@ def collect(video_file_path, interval=30, crop_root_dir="crop/"):
     print ('crop_dir', crop_dir)
     if not os.path.isdir(crop_dir):
         os.mkdir(crop_dir)
-    metadata_file_path = "{}-{}.tsv".format(os.path.join(os.path.dirname(video_file_path), video_name), interval)
+    metadata_file_path = get_metadata_file_path(video_file_path, interval)
     print ('metadata_file', metadata_file_path)
     
     metadata = dict()

@@ -1,5 +1,11 @@
 import csv
 import copy
+import os
+
+def get_metadata_file_path(video_file_path, interval):
+    video_name = os.path.splitext(os.path.basename(video_file_path))[0]
+    metadata_file_path = "{}-{}.tsv".format(os.path.join(os.path.dirname(video_file_path), video_name), interval) 
+    return metadata_file_path
 
 def parse_metadata_file(metadata_file_path):
     metadata = list()

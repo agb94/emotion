@@ -1,8 +1,20 @@
 <div class="row" style="padding-top:20px; padding-bottom:20px;">
   <div class="col-md-4 text-center">
-    <h2 style="width:100%;"><a href="/">MyDetective</a></h2>
+    <h2 class="logo" style="width:100%;"><a href="/">MyDetective</a></h2>
+    <p class="title">{{ title }} <small>{{ subtitle }}</small></p>
   </div>
   <div class="col-md-8">
-    <h2>{{ title }} <small>{{ subtitle }}</small></h2>
   </div>
 </div>
+
+<style>
+  .logo a {
+    color: #fff;
+    font-weight: 100;
+  }
+  .title {
+    color: #353535;
+    font-size: 1rem;
+    font-weight: 100;
+  }
+</style>

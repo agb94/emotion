@@ -12,10 +12,11 @@ def index(request):
 def analysis(request):
     if request.is_ajax():
         crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
-        videoFile = request.GET['videoFile']
+        video_file_path = request.GET['videoFile']
         interval = int(request.GET['interval'])
-        metadata_file_path = mydetective.collect(videoFile, interval=interval, crop_root_dir=crop_root_dir)
-        # metadata_file_path = 'bigbang-3000.tsv'
+        metadata_file_path = mydetective.get_metadata_file_path(video_file_path, interval)
+        if not os.path.exists(metadata_file_path):
+            metadata_file_path = mydetective.collect(video_file_path, interval=interval, crop_root_dir=crop_root_dir)
         K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
         metadata = mydetective.parse_metadata_file(metadata_file_path)
         metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
