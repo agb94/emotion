@@ -69,4 +69,11 @@ relationship = mydetective.sorted_relationship(metadata_file_path)
 for key, value in relationship:
     a, b = key
     print_msg ("- ({},{}): {}".format(a, b, value))
+
+print_divider()
+# 4. Emotional Changes Analyzer
+switch_module("Emotional Changes Analyzer")
+print_msg("Start analyzing emotional changes of a character")
+emotions = mydetective.characters_emotion(metadata_file_path, 1)
+print (emotions)
 print_divider()

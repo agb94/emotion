@@ -9,7 +9,13 @@
         {% include "home/tab.html" %}
       </div>
       <div class="col-md-8">
-        <p>Contents</p>
+        <h1>Character {{ character_id }}'s emotional changes</h1>
+        {% for frame, data in emotions %}
+        <h3>{{ frame }}</h3>
+        {% for feature, value in data.0.scores.iteritems %}
+        <p>{{ feature }}: {{ value }}<p>
+        {% endfor %}
+        {% endfor %}
       </div>
     </div>
   </div>

@@ -48,5 +48,11 @@ def relationship(request):
     return render(request, 'home/relationship.html', { 'relationships': relationships, 'metadata': metadata_file_path })
 
 def emotion(request):
+    crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
     metadata_file_path = request.GET['metadata']
-    return render(request, 'home/emotion.html', { 'metadata': metadata_file_path })
+    if 'character_id' in request.GET:
+        character_id=int(request.GET['character_id'])
+    else:
+        character_id = 1
+    emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir)
+    return render(request, 'home/emotion.html', { 'metadata': metadata_file_path, 'character_id': character_id, 'emotions': emotions })
