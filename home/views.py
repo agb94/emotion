@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.http import HttpResponse
 import json
+import os
 import mydetective
 
 # Create your views here.
@@ -9,11 +11,15 @@ def index(request):
 
 def analysis(request):
     if request.is_ajax():
+        crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
         videoFile = request.GET['videoFile']
         interval = int(request.GET['interval'])
-        metadata_file_path = mydetective.collect(videoFile, interval)
-        K = mydetective.cluster(metadata_file_path)
-        data = json.dumps({ 'K': K, 'metadata': metadata_file_path })
+        metadata_file_path = mydetective.collect(videoFile, interval=interval, crop_root_dir=crop_root_dir)
+        # metadata_file_path = 'bigbang-3000.tsv'
+        K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
+        metadata = mydetective.parse_metadata_file(metadata_file_path)
+        metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
+        data = json.dumps({ 'K': K, 'metadata_file_path': metadata_file_path, 'characters': metadata })
         return HttpResponse(data, content_type='application/json')
     else:
         if request.method == "POST":
@@ -31,7 +37,14 @@ def characters(request):
 
 def relationship(request):
     metadata_file_path = request.GET['metadata']
-    relationships = mydetective.sorted_relationship(metadata_file_path)
+    overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
+    overview = mydetective.parse_overview_file(overview_path)
+    sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
+    relationships = dict(list(map(lambda t: (t[0], { 'image': t[1]['centroid_image'], 'rels': list() }), overview )))
+    for key, value in sorted_relationships:
+        a, b = key
+        relationships[a]['rels'].append((b, relationships[b]['image'], value))
+        relationships[b]['rels'].append((a, relationships[a]['image'], value))
     return render(request, 'home/relationship.html', { 'relationships': relationships, 'metadata': metadata_file_path })
 
 def emotion(request):

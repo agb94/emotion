@@ -11,7 +11,8 @@ def parse_metadata_file(metadata_file_path):
                 'msec': float(row['msec']),
                 'frame_number': int(row['frame_number']),
                 'position': eval(row['position']),
-                'image_file_path': row['image_file_path']
+                'image_file_path': row['image_file_path'],
+                'centroid': bool(int(row['centroid']))
             })
     return metadata
 
@@ -24,17 +25,18 @@ def parse_metadata_file_to_dict(metadata_file_path):
                 'character_id': int(row['character_id']),
                 'msec': float(row['msec']),
                 'frame_number': int(row['frame_number']),
-                'position': eval(row['position'])
+                'position': eval(row['position']),
+                'centroid': bool(int(row['centroid']))
             }
     return metadata
 
 def write_metadata_file(metadata_file_path, metadata):
     sorted_metadata = sorted(metadata.items(), key=lambda t: (t[1]['frame_number'], t[0]))
     with open(metadata_file_path, 'w') as tsvfile:
-        columns = ['image_file_path', 'msec', 'frame_number', 'position', 'character_id'] 
+        columns = ['image_file_path', 'msec', 'frame_number', 'position', 'character_id', 'centroid']
         tsvfile.write("\t".join(columns) + "\n")
         for k, v in sorted_metadata:
-            tsvfile.write("{}\t{}\t{}\t{}\t{}\n".format(k, v['msec'], v['frame_number'], v['position'], v['character_id']))
+            tsvfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(k, v['msec'], v['frame_number'], v['position'], v['character_id'], int(v['centroid'])))
 
 def parse_overview_file(overview_file_path):
     overview = dict()
@@ -43,7 +45,8 @@ def parse_overview_file(overview_file_path):
         for row in rows:
             overview[int(row['character_id'])]= {
                 'appearance_count': int(row['appearance_count']),
-                'level_of_importance': float(row['level_of_importance'])
+                'level_of_importance': float(row['level_of_importance']),
+                'centroid_image': row['centroid_image']
             }
     sorted_overview = sorted(overview.items(), key=lambda t: t[1]['level_of_importance'])
     sorted_overview.reverse()

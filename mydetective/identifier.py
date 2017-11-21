@@ -27,6 +27,7 @@ import numpy as np
 import scipy as sp
 import scipy.cluster.vq
 import scipy.spatial.distance
+from sklearn.metrics import pairwise_distances_argmin_min
 from collections import Counter
 from shutil import copyfile
 from matplotlib import pyplot as plt
@@ -46,17 +47,17 @@ net = openface.TorchNeuralNet(os.path.join(openfaceModelDir, 'nn4.small2.v1.t7')
 def get_rep(img_path):
     bgrImg = cv2.imread(img_path)
     if bgrImg is None:
-        # print("Unable to load image: {}".format(img_path))
+        print("Unable to load image: {}".format(img_path))
         return None
     rgbImg = cv2.cvtColor(bgrImg, cv2.COLOR_BGR2RGB)
     bb = align.getLargestFaceBoundingBox(rgbImg)
     if bb is None:
-        # print("Unable to find a face: {}".format(img_path))
+        print("Unable to find a face: {}".format(img_path))
         return None
     aligned_face = align.align(IMG_DIM, rgbImg, bb,
                               landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
     if aligned_face is None:
-        # print("Unable to align image: {}".format(img_path))
+        print("Unable to align image: {}".format(img_path))
         return None
     rep = net.forward(aligned_face)
     return rep
@@ -94,7 +95,7 @@ def firstmax_index(l, threshold=0.01):
         return i - 1
     return i
 
-def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False):
+def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False, crop_root_dir="crop/"):
     metadata = parse_metadata_file_to_dict(metadata_file_path)
     img_paths = list()
     X = None
@@ -103,7 +104,8 @@ def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False):
             continue
         if debugging:
             print ("processing {}".format(img))
-        rep = get_rep(img)
+        img_path = os.path.join(crop_root_dir, img)
+        rep = get_rep(img_path)
         if rep is not None:
             img_paths.append(img)
             if X is None:
@@ -129,11 +131,18 @@ def cluster(metadata_file_path, start=None, end=None, K=None, debugging=False):
             if not os.path.exists(cluster_dir):
                 os.mkdir(cluster_dir)
             cluster_dirs[k] = cluster_dir
+    print('---------------kmc---------------') 
 
+    closest, _ = pairwise_distances_argmin_min(kmc, X)
+    print(closest)
     for i in range(len(img_paths)):
         img_path = img_paths[i]
         c = kml[i] + 1
         metadata[img_paths[i]]['character_id'] = c
+        if i in closest:
+            metadata[img_paths[i]]['centroid'] = True
+        else:
+            metadata[img_paths[i]]['centroid'] = False
         if debugging:
             copyfile(img_path, os.path.join(cluster_dirs[c], os.path.basename(img_path)))
 

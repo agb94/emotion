@@ -5,15 +5,14 @@ import os
 import dlib
 from .util import *
 
-CROP_DIR = "crop/"
 IMG_DIM = 96
 
-def collect(video_file_path, interval=30):
+def collect(video_file_path, interval=30, crop_root_dir="crop/"):
     detector = dlib.get_frontal_face_detector()
     win = dlib.image_window()
     cap = cv2.VideoCapture(video_file_path)
     video_name = os.path.splitext(os.path.basename(video_file_path))[0]
-    crop_dir = CROP_DIR + video_name
+    crop_dir = os.path.join(crop_root_dir, video_name)
     print ('crop_dir', crop_dir)
     if not os.path.isdir(crop_dir):
         os.mkdir(crop_dir)
@@ -45,13 +44,14 @@ def collect(video_file_path, interval=30):
             h = d.bottom() - d.top()
             #if w >= IMG_DIM and h >= IMG_DIM:
             crop_img = frame[y:(y+h), x:(x+w)]
-            crop_img_path = os.path.join(crop_dir, "{}-{}.jpg".format(curr_frame, face_counter))
-            cv2.imwrite(crop_img_path, crop_img)
+            crop_img_path = os.path.join(video_name, "{}-{}.jpg".format(curr_frame, face_counter))
+            cv2.imwrite(os.path.join(crop_root_dir, crop_img_path), crop_img)
             metadata[crop_img_path] = {
                 'msec': msec,
                 'frame_number': curr_frame,
                 'position': str((x,y,w,h)),
-                'character_id': -1
+                'character_id': -1,
+                'centroid': False
             }
             # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             face_counter += 1

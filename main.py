@@ -5,7 +5,7 @@ parser.add_argument('video', metavar='V', type=str,
                     help='a video to analyze')
 parser.add_argument('-K', type=int,
                     help='the number of clusters')
-parser.add_argument('--interval', default=30,
+parser.add_argument('--interval', default=30, type=int,
                     help='frame interval (default: 30)')
 parser.add_argument('--metadata', type=str,
                     help='path of metadata file if exists')

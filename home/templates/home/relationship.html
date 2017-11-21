@@ -10,19 +10,25 @@
       </div>
       <div class="col-md-8">
       {% load static %}
-      {% for key, value in relationships %}
+      {% for key, value in relationships.iteritems %}
         <div class="row">
           <div class="col-md-3">
-            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
-            <p style="text-align:center; padding:10px;">Character {{ key.0 }}</p>
+            <img src="{% static 'crop/'|add:value.image %}" style="width: 100%;"/>
+            <p style="text-align:center; padding:10px;">Character {{ key }}</p>
           </div>
-          <div class="col-md-3">
-            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
-            <p style="text-align:center; padding:10px;">Character {{ key.1 }}</p>
-          </div>
-          <div class="col-md-6">
-            <div style="background-color:#50e2ed;width:{{ value }}%;height:50%;border-top-right-radius: 10px;border-bottom-right-radius: 10px;"></div>
-            <p>{{ value }}</p>
+          <div class="col-md-9">
+          {% for rel in value.rels %}
+            <div class="row">
+              <div class="col-md-3">
+                <img src="{% static 'crop/'|add:rel.1 %}" style="width: 100%;"/>
+                <p style="text-align:center; padding:10px;">Character {{ rel.0 }}</p>
+              </div>
+              <div class="col-md-9">
+                <div style="background-color:#50e2ed;width:{{ rel.2 }}%;height:30%;border-top-right-radius: 10px;border-bottom-right-radius: 10px;"></div>
+                <!--<p>{{ rel.2 }}</p>-->
+              </div>
+            </div>
+          {% endfor %}
           </div>
         </div>
       {% endfor %}

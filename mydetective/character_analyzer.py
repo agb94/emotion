@@ -26,6 +26,7 @@ def character_analyzer(metadata_path, frame_interval=30):
     frame_list = { i: list() for i in char_ids }
     tmp = { i: list() for i in char_ids }
     importance = { i: 0 for i in char_ids }
+    centroid_image = { i: '' for i in char_ids }
     
     previous_id = -1
     threshold = 20
@@ -40,7 +41,9 @@ def character_analyzer(metadata_path, frame_interval=30):
 
             character_count[char_id] += 1
             average_size[char_id] += photo_size
-            
+            if row["centroid"]:
+                centroid_image[char_id] = row["image_file_path"]
+
             # for a video frame list
             if previous_id == char_id:
                 tmp[char_id].append(current_frame)
@@ -82,11 +85,11 @@ def character_analyzer(metadata_path, frame_interval=30):
             importance[char_id] *= character_count[char_id]
         
         # write on characters_overview.tsv
-        writing = "character_id\tappearance_count\tlevel_of_importance"
+        writing = "character_id\tappearance_count\tlevel_of_importance\tcentroid_image"
         overview.write(writing + "\n")
 
         for char_id in char_ids:
-            line = "{}\t{}\t{}".format(char_id, character_count[char_id], importance[char_id])
+            line = "{}\t{}\t{}\t{}".format(char_id, character_count[char_id], importance[char_id], centroid_image[char_id])
             overview.write(line + "\n")
         
         # write on clip.tsv

@@ -13,7 +13,7 @@
       {% for char_id, features in overview %}
         <div class="row">
           <div class="col-md-3">
-            <img src="{% static 'home/images/profile-default-male.png' %}" style="width: 100%;"/>
+            <img src="{% static 'crop/'|add:features.centroid_image %}" style="width: 100%;"/>
             <p style="text-align:center; padding:10px;">Character {{ char_id }}</p>
           </div>
           <div class="col-md-9">
