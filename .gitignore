@@ -12,9 +12,6 @@ __pycache__/
 # C extensions
 *.so
 
-crop/
-crop_dlib/
-
 # Metadata file
 *.tsv
 

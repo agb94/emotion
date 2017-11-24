@@ -7,11 +7,21 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   <style>
     {% load static %}
+    @-webkit-keyframes fade-in {
+      0% { opacity: 0; margin-top: 20px;}
+      80% { margin-top: 0px; }
+      100% { opacity: 1; }
+    }
+    html, body { height: 100%; position: relative; }
     body {
       padding-top: 10px;
-      background-image: url("{% static 'home/images/background-1.jpg' %}");
-      background-size: 100%;
+      background-size: cover;
       background-attachment: fixed;
+      background-image: url("{% static 'home/images/background-2.jpg' %}");
+      -webkit-animation-name: fade-in;
+      -webkit-animation-duration: 0.5s;
+      -webkit-animation-timing-function: linear;
+      -webkit-animation-iteration-count: 1;
     }
   </style>
 </head>

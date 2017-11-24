@@ -4,7 +4,10 @@
 <body>
   <div class="container">
     {% include "home/navi.html" with title=videoFile subtitle=interval %}
-    <div class="row" id="loading" style="padding: 30px;"> 
+    <div class="row loading-page">
+      <h2 id="loading-message" class="text-center">Processing the video file...</h2>
+    </div>
+    <div class="row loading-page">
       <div class="loader"></div>
     </div>
     <div class="row invisible" id="result">
@@ -21,24 +24,32 @@
 </html>
 
 <style>
+.loading-page {
+  padding: 30px;
+}
+.loading-page #loading-message {
+  color: white;
+  font-weight: 100;
+  width: 100%;
+}
 
 .loader {
-    border: 16px solid #f3f3f3; /* Light grey */
-    border-top: 16px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 1s linear infinite;
-    margin: auto;
+  border: 10px solid #f3f3f3; /* Light grey */
+  border-top: 10px solid #636363; /* grey */
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+  margin: auto;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .invisible {
-    display: none;
+  display: none;
 }
 </style>
 <script type="text/javascript">
@@ -59,7 +70,7 @@ $(document).ready(function(){
         $('#tab li a#characters').attr("href", "/characters?metadata=" + escape(data['metadata_file_path']));
         $('#tab li a#relationship').attr("href", "/relationship?metadata=" + escape(data['metadata_file_path']));
         $('#tab li a#emotion').attr("href", "/emotion?metadata=" + escape(data['metadata_file_path']));
-        $('#loading').addClass('invisible');
+        $('.loading-page').addClass('invisible');
         $('#result').removeClass('invisible');
         $('#characters-info').text(JSON.stringify(data['characters']));
       },
