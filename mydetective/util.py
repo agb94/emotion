@@ -1,8 +1,15 @@
 import csv
 import copy
 import os
+import cv2
 
-def get_metadata_file_path(video_file_path, interval):
+def get_metadata_file_path(video_file_path, interval=30, interval_sec=None):
+    if interval_sec:
+        cap = cv2.VideoCapture(video_file_path)    
+        total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        interval = int(fps * interval_sec)
+        cap.release()
     video_name = os.path.splitext(os.path.basename(video_file_path))[0]
     metadata_file_path = "{}-{}.tsv".format(os.path.join(os.path.dirname(video_file_path), video_name), interval) 
     return metadata_file_path

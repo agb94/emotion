@@ -7,7 +7,7 @@ from .util import *
 
 IMG_DIM = 96
 
-def collect(video_file_path, interval=30, crop_root_dir="crop/"):
+def collect(video_file_path, interval=30, crop_root_dir="crop/", interval_sec=None):
     detector = dlib.get_frontal_face_detector()
     win = dlib.image_window()
     cap = cv2.VideoCapture(video_file_path)
@@ -16,12 +16,17 @@ def collect(video_file_path, interval=30, crop_root_dir="crop/"):
     print ('crop_dir', crop_dir)
     if not os.path.isdir(crop_dir):
         os.mkdir(crop_dir)
+    
+    total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    if interval_sec:
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        interval = int(fps * interval_sec)
+
     metadata_file_path = get_metadata_file_path(video_file_path, interval)
     print ('metadata_file', metadata_file_path)
-    
+
     metadata = dict()
     frame_counter = 0
-    total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     curr_frame = 0
     while(curr_frame < total_frames):
         # cv2.imshow('frame', frame) 
