@@ -5,28 +5,26 @@
     <div class="container">
       {% include "home/navi.html" with title="" subtitle="" %}
       <div class="row">
-        <div class="col-3">
+        <div class="col-2">
         </div>
-        <div class="col-6">
+        <div class="col-8">
           <form action="/analysis" method="post">
             {% csrf_token %}
-            <div class="form-group row">
+            <div class="form-group text-center">
+              <!--<label for="interval">Interval</label>-->
+              <input id="interval" class="form-control" type="number" name="interval" value=1>
+              <small class="help-text">I would like to analyze the video with <b><span id="sec">1</span></b> sec(s) of interval.</small>
+            </div>
+
+            <div class="form-group">
               <label class="custom-file">
-                <input type="file" id="videoFile2" name="videoFile2" class="custom-file-input">
+                <input type="file" id="videoFile" name="videoFile" class="custom-file-input">
                 <span class="custom-file-control"></span>
+                <span id="video-file-name">Choose file...</span>
               </label>
             </div>
-            <div class="form-group row">
-              <label for="videoFile">Video file</label>
-              <input id="videoFile" class="form-control-file" type="file" name="videoFile">
-            </div>
-            <div class="form-group row">
-              <label for="interval">Interval</label>
-              <input id="interval" class="form-control" type="number" name="interval" value=1>
-              <small class="text-muted">I would like to analyze the video with 1 sec(s) of interval.</small>
-            </div>
-            <div class="form-group row">
-              <button type="submit" class="btn btn-default">Analyze!</button>
+            <div class="form-group text-center">
+              <button type="submit" class="btn btn-secondary">Analyze!</button>
             </div>
           </form>
         </div>
@@ -35,6 +33,12 @@
   </body>
 </html>
 <style>
+form {
+  padding: 20px 20px;
+  margin: 20% 0px;
+  background-color: rgba(255,255,255,0.2); 
+  border-radius: 5px;
+}
 label {
   color: white;
   font-weight: 100;
@@ -42,4 +46,42 @@ label {
 .form-control-file {
   color: white;
 }
+.custom-file {
+  width: 80%;
+  margin: 10px 10% 0px 10%;
+}
+.custom-file-input {
+  font-size: 1.2rem;
+}
+.form-group .help-text {
+  color: white;
+  font-weight: 100;
+}
+#video-file-name {
+  position: absolute;
+  top: 0;
+  z-index: 5;
+  color: black;
+  left: 5px;
+  height: 2.5rem;
+  padding: .5rem 1rem;
+  background-color: white;
+  border-top: 1px solid rgba(0,0,0,.15);
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
 </style>
+<script>
+  $(document).ready(function(){
+    intervalSec = $('input[name=interval]');
+    intervalSec.change(function(){
+      if ($(this).val() < 1) {
+        $(this).val(1);
+      }
+      $("span#sec").text($(this).val());
+    });
+    $('input[name=videoFile]').change(function(){
+      var fileName = $(this).val().replace("C:\\fakepath\\", "");
+      $("#video-file-name").text(fileName);
+    });
+  });
+</script>

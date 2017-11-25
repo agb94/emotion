@@ -28,12 +28,14 @@ def get_emotion(image_file_path):
         print("[Errno {0}] {1}".format(e.errno, e.strerror))
         return None
 
-def characters_emotion(metadata_path, character_id, crop_root_dir="crop/"):
+def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit=None):
     emotions = []
     metadata = util.parse_metadata_file(metadata_path)
     metadata = list(filter(lambda r: r['character_id'] == character_id, metadata))
     metadata = sorted(metadata, key=lambda r: r['frame_number'])
     interval = INTERVAL / len(KEYS)
+    if limit:
+        count = 0
     for i, row in enumerate(metadata):
         img_path = os.path.join(crop_root_dir, row['image_file_path'])
         key = KEYS[i % len(KEYS)]
@@ -41,7 +43,13 @@ def characters_emotion(metadata_path, character_id, crop_root_dir="crop/"):
         emotion = get_emotion(img_path)
         if emotion:
             emotions.append((row['frame_number'], emotion))
-        time.sleep(interval)
+        if limit:
+            count += 1
+            if count == limit:
+                break
+        if i + 1 != len(metadata):
+            # last
+            time.sleep(interval)
     return emotions
 
 if __name__ == '__main__':

@@ -55,5 +55,5 @@ def emotion(request):
         character_id=int(request.GET['character_id'])
     else:
         character_id = 1
-    emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir)
+    emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit = 10)
     return render(request, 'home/emotion.html', { 'metadata': metadata_file_path, 'character_id': character_id, 'emotions': emotions })
