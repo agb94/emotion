@@ -56,3 +56,6 @@ if __name__ == '__main__':
     if len(sys.argv) < 3:
         sys.exit()
     characters_emotion(sys.argv[1], int(sys.argv[2]))
+    #Added	for test
+    ret_list = characters_emotion(sys.argv[1], int(sys.argv[2]))
+    print(ret_list)
