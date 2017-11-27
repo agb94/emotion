@@ -62,12 +62,17 @@ def relationship(request):
     return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'relationships': relationships, 'metadata': metadata_file_path })
 
 def emotion(request):
-    crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
+    print (request.GET)
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
     if 'character_id' in request.GET:
         character_id=int(request.GET['character_id'])
     else:
         character_id = 1
-    emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit = 10)
-    return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'character_id': character_id, 'emotions': emotions })
+    if request.is_ajax():
+        crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
+        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit = 10)
+        data = json.dumps({ 'emotions': emotions })
+        return HttpResponse(data, content_type='application/json')
+    else: 
+        return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'character_id': character_id })

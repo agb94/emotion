@@ -29,20 +29,23 @@ def get_emotion(image_file_path):
         return None
 
 def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit=None):
-    emotions = []
     metadata = util.parse_metadata_file(metadata_path)
     metadata = list(filter(lambda r: r['character_id'] == character_id, metadata))
     metadata = sorted(metadata, key=lambda r: r['frame_number'])
     interval = INTERVAL / len(KEYS)
     if limit:
         count = 0
+    emotions = {}
     for i, row in enumerate(metadata):
         img_path = os.path.join(crop_root_dir, row['image_file_path'])
         key = KEYS[i % len(KEYS)]
         headers['Ocp-Apim-Subscription-Key'] = key
         emotion = get_emotion(img_path)
         if emotion:
-            emotions.append((row['frame_number'], emotion))
+            scores = emotion[0]['scores']
+            for feature in scores:
+                emotions[feature] = emotions.get(feature, list())
+                emotions[feature].append([row['frame_number'], scores[feature]])
         if limit:
             count += 1
             if count == limit:
@@ -50,7 +53,10 @@ def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit
         if i + 1 != len(metadata):
             # last
             time.sleep(interval)
-    return emotions
+    series = list()
+    for feature in emotions:
+        series.append({ 'name': feature, 'data': emotions[feature]})
+    return series
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
