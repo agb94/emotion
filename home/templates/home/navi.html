@@ -4,7 +4,9 @@
     <h4 class="title">{{ title }} <small>{{ subtitle }}</small></h4>
   </div>
   <div class="col-md-8">
-    <h4 class="menu text-center">{{ menu }}<br><span class="oi oi-chevron-bottom"></span></h4>
+    {% if menu %}
+      <h4 class="menu text-center">{{ menu }}<br><span class="oi oi-chevron-bottom"></span></h4>
+    {% endif %}
   </div>
 </div>
 

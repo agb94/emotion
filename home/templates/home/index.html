@@ -120,7 +120,6 @@ input[name=interval] {
 </style>
 <script>
   $(document).ready(function(){
-    $('.menu').addClass('invisible');
     var intervalSec = $('input[name=interval]');
     intervalSec.change(function(){
       if ($(this).val() < 1) {
