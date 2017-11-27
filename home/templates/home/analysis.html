@@ -16,7 +16,21 @@
       </div>
       <div class="col-md-8">
         <p><span id="K"></span> characters are detected.</p>
-        <p id="characters-info"></p>
+        <table class="table" id="characters-info">
+          <tr>
+            <th>
+              Character ID
+            </th>
+            <th>
+              Image
+            </th>
+            <th>
+              Name
+            </th>
+            <th>
+            </th>
+          </tr>
+        </table>
       </div>
     </div>
   </div>
@@ -72,7 +86,14 @@ $(document).ready(function(){
         $('#tab li a#emotion').attr("href", "/emotion?metadata=" + escape(data['metadata_file_path']));
         $('.loading-page').addClass('invisible');
         $('#result').removeClass('invisible');
-        $('#characters-info').text(JSON.stringify(data['characters']));
+        
+        var characters = data['characters'];
+        var table = $('table#characters-info');
+        for (i = 0; i < characters.length; i++) {
+          var ch = characters[i];
+          table.append("<tr class='character-info' character-id=" + ch.character_id +"><td>"+ch.character_id+"</td><td><img src='/static/crop/" + ch.image_file_path + "'></td><td><input type='text' class='form-control' value='" + ch.character_id + "'></td><td><div class='btn-group' role='group'><button class='btn btn-secondary'>Apply</button><button class='btn btn-danger'>Delete</button></div></td></tr>")  
+        } 
+        //$('#characters-info').text(JSON.stringify(data['characters']));
       },
       error : function(request,error)
       {
