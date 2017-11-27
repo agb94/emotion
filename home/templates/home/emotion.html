@@ -9,6 +9,12 @@
         {% include "home/tab.html" %}
       </div>
       <div class="col-md-8">
+        <div class="row loading-page">
+          <h2 id="loading-message" class="text-center">Interacting with Emotion API...</h2>
+        </div>
+        <div class="row loading-page">
+          <div class="loader"></div>
+        </div>
  	<div class=container id="container">
         </div>
       </div>
@@ -17,12 +23,36 @@
 </body>
 </html>
 <style>
+  .loading-page {
+    padding: 30px;
+  }
+  .loading-page #loading-message {
+    color: white;
+    font-weight: 100;
+    width: 100%;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .loader {
+    border: 10px solid #f3f3f3; /* Light grey */
+    border-top: 10px solid #636363; /* grey */
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+  }
   #container {
     background: none;
     min-width: 310px;
     max-width: 800px;
     height: 400px;
     margin: 0 auto
+  }
+  .invisible {
+    display: none;
   }
 </style>
 <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -42,6 +72,7 @@ $(document).ready(function(){
     },
     dataType:'json',
     success : function(data) {
+      $('.loading-page').addClass('invisible');
       Highcharts.chart('container', {
         title: {
           text: "Character {{ character_id }}'s emotional changes"
@@ -68,7 +99,7 @@ $(document).ready(function(){
           }
         },
         chart: {
-          backgroundColor: 'transparent',
+          backgroundColor: '#ffffff'
         },
         series: data.emotions,
         responsive: {

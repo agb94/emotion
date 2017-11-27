@@ -71,7 +71,7 @@ def emotion(request):
         character_id = 1
     if request.is_ajax():
         crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
-        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit = 10)
+        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=20)
         data = json.dumps({ 'emotions': emotions })
         return HttpResponse(data, content_type='application/json')
     else: 
