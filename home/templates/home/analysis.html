@@ -3,7 +3,7 @@
 {% include "home/header.html" %}
 <body>
   <div class="container">
-    {% include "home/navi.html" with title=videoFile subtitle=interval %}
+    {% include "home/navi.html" with title=videoFile %}
     <div class="row loading-page">
       <h2 id="loading-message" class="text-center">Processing the video file...</h2>
     </div>
@@ -56,7 +56,9 @@
   animation: spin 1s linear infinite;
   margin: auto;
 }
-
+.character-image {
+  width: 8rem;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -81,9 +83,12 @@ $(document).ready(function(){
       dataType:'json',
       success : function(data) {
         kField.text(data['K']);
-        $('#tab li a#characters').attr("href", "/characters?metadata=" + escape(data['metadata_file_path']));
-        $('#tab li a#relationship').attr("href", "/relationship?metadata=" + escape(data['metadata_file_path']));
-        $('#tab li a#emotion').attr("href", "/emotion?metadata=" + escape(data['metadata_file_path']));
+        params = '';
+        params += 'videoFile=' + escape('{{ videoFile }}');
+        params += '&metadata=' + escape(data['metadata_file_path']);
+        $('#tab li a#characters').attr("href", "/characters?" + params);
+        $('#tab li a#relationship').attr("href", "/relationship?" + params);
+        $('#tab li a#emotion').attr("href", "/emotion?" + params);
         $('.loading-page').addClass('invisible');
         $('#result').removeClass('invisible');
         
@@ -91,7 +96,7 @@ $(document).ready(function(){
         var table = $('table#characters-info');
         for (i = 0; i < characters.length; i++) {
           var ch = characters[i];
-          table.append("<tr class='character-info' character-id=" + ch.character_id +"><td>"+ch.character_id+"</td><td><img src='/static/crop/" + ch.image_file_path + "'></td><td><input type='text' class='form-control' value='" + ch.character_id + "'></td><td><div class='btn-group' role='group'><button class='btn btn-secondary'>Apply</button><button class='btn btn-danger'>Delete</button></div></td></tr>")  
+          table.append("<tr class='character-info' character-id=" + ch.character_id +"><td>"+ch.character_id+"</td><td><img class='character-image' src='/static/crop/" + ch.image_file_path + "'></td><td><input type='text' class='form-control' value='" + ch.character_id + "'></td><td><div class='btn-group' role='group'><button class='btn btn-secondary'>Apply</button><button class='btn btn-danger'>Delete</button></div></td></tr>")  
         } 
         //$('#characters-info').text(JSON.stringify(data['characters']));
       },

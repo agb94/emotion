@@ -3,26 +3,32 @@
 {% include "home/header.html" %}
 <body>
   <div class="container">
-    {% include "home/navi.html" with title="Character Overviews" subtitle="" %}
+    {% include "home/navi.html" with title=videoFile menu="Character Overviews" %}
     <div class="row">
       <div class="col-md-4">
         {% include "home/tab.html" %}
       </div>
       <div class="col-md-8">
       {% load static %}
+      {% load mathfilters %}
       {% for char_id, features in overview %}
-        <div class="row">
-          <p class="character-label">Character {{ char_id }}</p>
-        </div>
         <div class="row character-card">
           <div class="col-md-3">
+            <p class="character-label text-center">Character {{ char_id }}</p>
             <img src="{% static 'crop/'|add:features.centroid_image %}" style="width: 100%;"/>
           </div>
           <div class="col-md-9">
-            <ul>
-            {% for feature, value in features.iteritems %}
-              <li>{{ feature }}: {{ value }}</li>
-            {% endfor %}
+            <div class="star-ratings-css">
+              <div class="star-ratings-css-top" style="width: {{ features.level_of_importance|div:overview.0.1.level_of_importance|mul:100 }}%"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+              <div class="star-ratings-css-bottom"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+            </div>
+            <span class="importance">
+              {{ features.level_of_importance|floatformat:2 }}
+          </span>
+          <ul>
+              <!--li>{{ features.level_of_importance|floatformat:3 }}</li>
+              <li>{{ features.level_of_importance|div:overview.0.1.level_of_importance }}</li-->
+              <li>The number of appearances: {{ features.appearance_count }}</li>
             </ul>
           </div>
         </div>
@@ -36,12 +42,45 @@
 <style>
 .character-card {
   background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.25rem;
   padding: 20px 5px;
   margin-bottom: 15px;
 }
-.character-label {
+.character-card .character-label {
   color: #fff;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 100;
   margin-bottom: 10px;
+}
+.star-ratings-css {
+  display: inline-block;
+  unicode-bidi: bidi-override;
+  color: #c5c5c5;
+  font-size: 2rem;
+  line-height: 2rem;
+  height: 2rem;
+  margin: 0px 5px 20px 20px;
+  position: relative;
+  padding: 0;
+  text-shadow: 0px 1px 0 #a2a2a2;
+}
+.star-ratings-css-top {
+  color: gold;
+  padding: 0;
+  position: absolute;
+  z-index: 1;
+  display: block;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+.star-ratings-css-bottom {
+  padding: 0;
+  display: block;
+  z-index: 0;
+}
+.importance {
+  font-size: 2rem;
+  font-weight: 100;
 }

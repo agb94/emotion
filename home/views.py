@@ -31,13 +31,15 @@ def analysis(request):
 
 def characters(request):
     metadata_file_path = request.GET['metadata']
+    videoFile = request.GET['videoFile']
     overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
     overview = mydetective.parse_overview_file(overview_path)
     clip = mydetective.parse_clip_file_to_dict(clip_path)
-    return render(request, 'home/characters.html', { 'overview': overview, 'clip': clip, 'metadata': metadata_file_path })
+    return render(request, 'home/characters.html', { 'videoFile': videoFile, 'overview': overview, 'clip': clip, 'metadata': metadata_file_path })
 
 def relationship(request):
     metadata_file_path = request.GET['metadata']
+    videoFile = request.GET['videoFile']
     overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
     overview = mydetective.parse_overview_file(overview_path)
     sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
@@ -46,14 +48,15 @@ def relationship(request):
         a, b = key
         relationships[a]['rels'].append((b, relationships[b]['image'], value))
         relationships[b]['rels'].append((a, relationships[a]['image'], value))
-    return render(request, 'home/relationship.html', { 'relationships': relationships, 'metadata': metadata_file_path })
+    return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'relationships': relationships, 'metadata': metadata_file_path })
 
 def emotion(request):
     crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
     metadata_file_path = request.GET['metadata']
+    videoFile = request.GET['videoFile']
     if 'character_id' in request.GET:
         character_id=int(request.GET['character_id'])
     else:
         character_id = 1
     emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit = 10)
-    return render(request, 'home/emotion.html', { 'metadata': metadata_file_path, 'character_id': character_id, 'emotions': emotions })
+    return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'character_id': character_id, 'emotions': emotions })

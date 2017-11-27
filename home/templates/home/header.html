@@ -6,6 +6,7 @@
   <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <link href="{% static 'home/open-iconic/font/css/open-iconic-bootstrap.css' %}" rel="stylesheet">
   <style>
     @-webkit-keyframes fade-in {
       0% { opacity: 0; margin-top: 20px;}
@@ -16,9 +17,20 @@
     body {
       color: white;
       padding-top: 10px;
+      /* 
+         background-image: url("{% static 'home/images/background-1.jpg' %}");
       background-size: cover;
       background-attachment: fixed;
-      background-image: url("{% static 'home/images/background-2.jpg' %}");
+      */
+        /*
+      background: #0f0c29;
+      background: -webkit-linear-gradient(to right, #24243e, #302b63, #0f0c29);
+      background: linear-gradient(to right, #24243e, #302b63, #0f0c29); 
+*/
+      background: #005C97;  /* fallback for old browsers */
+      background: -webkit-linear-gradient(to right, #363795, #005C97);  /* Chrome 10-25, Safari 5.1-6 */
+      background: linear-gradient(to right, #363795, #005C97); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
       -webkit-animation-name: fade-in;
       -webkit-animation-duration: 0.5s;
       -webkit-animation-timing-function: linear;
