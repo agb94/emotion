@@ -2,12 +2,12 @@
 
 Command line
 ```
-python main.py [video_name] —interval [time_interval(default: 1)]
+python main.py [video_name] —-interval [time_interval(default: 1)]
 ```
 
 ex)
 ```
-python main.py bigbang.mkv —interval 3
+python main.py bigbang.mkv —-interval 3
 ```
 
 If you already have a metadata file for the video, then
@@ -15,6 +15,12 @@ If you already have a metadata file for the video, then
 python main.py [video_file] --metadata [metadata_file_path]
 ```
 this command will save your time :)
+
+Also, if you want to cluster the characters into 
+specific number of sets, then add `-K` option.
+```
+python main.py [video_file] -K [the_number_of_clusters]
+```
 
 
 GUI
