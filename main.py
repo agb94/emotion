@@ -5,8 +5,8 @@ parser.add_argument('video', metavar='V', type=str,
                     help='a video to analyze')
 parser.add_argument('-K', type=int,
                     help='the number of clusters')
-parser.add_argument('--interval', default=30, type=int,
-                    help='frame interval (default: 30)')
+parser.add_argument('--interval', default=1, type=int,
+                    help='time interval (sec) (default: 1)')
 parser.add_argument('--metadata', type=str,
                     help='path of metadata file if exists')
 parser.add_argument('--debugging', dest='debugging', action='store_true')
@@ -31,7 +31,7 @@ print_msg("Start collecting faces")
 if args.metadata:
     metadata_file_path = args.metadata
 else:
-    metadata_file_path = mydetective.collect(args.video, args.interval)
+    metadata_file_path = mydetective.collect(args.video, interval_sec = args.interval)
 print_msg("{} created".format(metadata_file_path))
 
 print_divider()
