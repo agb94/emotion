@@ -37,7 +37,8 @@ KEYS = [
     'db27e49c7b0c4adb868fea9b9e6cd1dd',
     '164c523e5f66445cac7ec8fabef2dd8f',
     '6cdef4cf98624bd182a058fba63e2810',
-    'b7ecf07a28fb47a5b4074b6d022c0aa2'
+    'b7ecf07a28fb47a5b4074b6d022c0aa2',
+    '9c04dfc4cf7d42d09b6f8d563e47d2a1'
 ]
 headers = {
     'Content-Type': 'application/octet-stream',
