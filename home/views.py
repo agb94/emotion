@@ -28,7 +28,9 @@ def analysis(request):
                 metadata_file_path = mydetective.get_metadata_file_path(video_file_path, interval_sec=interval_sec)
                 if not os.path.exists(metadata_file_path):
                     metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
-            K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
+            metadata = mydetective.parse_metadata_file(metadata_file_path)
+            if len(set((map(lambda r: r['character_id'], metadata)))) == 1: 
+                K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
         data = json.dumps({ 'K': K, 'metadata_file_path': metadata_file_path, 'characters': metadata })
@@ -43,36 +45,47 @@ def analysis(request):
 def characters(request):
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
-    overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
-    overview = mydetective.parse_overview_file(overview_path)
-    clip = mydetective.parse_clip_file_to_dict(clip_path)
+    overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
     return render(request, 'home/characters.html', { 'videoFile': videoFile, 'overview': overview, 'clip': clip, 'metadata': metadata_file_path })
 
 def relationship(request):
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
-    overview_path, clip_path = mydetective.character_analyzer(metadata_file_path)
-    overview = mydetective.parse_overview_file(overview_path)
+    overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
     sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
     relationships = dict(list(map(lambda t: (t[0], { 'image': t[1]['centroid_image'], 'rels': list() }), overview )))
+    heatmap_data = []
     for key, value in sorted_relationships:
         a, b = key
         relationships[a]['rels'].append((b, relationships[b]['image'], value))
         relationships[b]['rels'].append((a, relationships[a]['image'], value))
-    return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'relationships': relationships, 'metadata': metadata_file_path })
+        if a >= b:
+            heatmap_data.append([a,b,round(value,2)])
+        else:
+            heatmap_data.append([b,a,round(value,2)])
+    character_ids = []
+    for row in overview:
+        character_ids.append(row[0])
+    character_ids.sort()
+    for data in heatmap_data:
+        data[0] = character_ids.index(data[0])
+        data[1] = character_ids.index(data[1])
+    return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'relationships': relationships, 'metadata': metadata_file_path, 'heatmap': { 'category': character_ids, 'data': heatmap_data }})
 
 def emotion(request):
-    print (request.GET)
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
-    if 'character_id' in request.GET:
-        character_id=int(request.GET['character_id'])
-    else:
-        character_id = 1
     if request.is_ajax():
+        character_id=int(request.GET['character_id'])
         crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
         emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=20)
         data = json.dumps({ 'emotions': emotions })
         return HttpResponse(data, content_type='application/json')
-    else: 
-        return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'character_id': character_id })
+    else:
+        if 'character_id' in request.GET:
+            character_id = int(request.GET['character_id'])
+        else:
+            character_id = None
+        overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
+        overview = sorted(overview, key=lambda t: t[0])
+        return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'overview': overview, 'character_id': character_id })

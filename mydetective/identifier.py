@@ -65,7 +65,6 @@ def get_rep(img_path):
 def gap(reps, nrefs=100, ks=range(1, 11)):
     # Input
     # rep: list of representations
-    # label: list of labels for each representation
     shape = reps.shape
     tops = reps.max(axis=0)
     bots = reps.min(axis=0)

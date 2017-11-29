@@ -24,6 +24,7 @@
         </div>
       </div>
       <div class="col-md-8">
+        <div id="container" style="height: 400px; min-width: 310px; max-width: 800px; margin: 0 auto;"></div>
       {% for key, value in relationships.iteritems %}
         <div class="char-rel invisible" char-id='{{ key }}'>
           <h4 class="char-rel-list-title"><span class="oi oi-heart"></span> Character {{ key }}'s Relationship</h4>
@@ -82,6 +83,7 @@
 }
 .char-rel-list-title {
   font-weight: 100;
+  margin-top: 20px;
   margin-bottom: 20px;
 }
 .char-rel-list img{
@@ -96,18 +98,92 @@
   vertical-align: middle;
 }
 </style>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
   $(document).ready(function(){
     var activate = function(id){
       $('.char-rel[char-id=' + id + ']').removeClass('invisible');
       $('.view-button[char-id=' + id + ']').addClass('disabled');
     };
-    activate(1);
     $('.view-button').click(function(){
       var characterId = $(this).attr('char-id');
       $('.char-rel').addClass('invisible');
       $('.view-button').removeClass('disabled');
       activate(characterId);
+    });
+    nullData = [];
+    counter = 0;
+    {% for charLabel in heatmap.category %}
+    nullData.push([counter,counter,null])
+    counter += 1;
+    {% endfor %}
+    Highcharts.chart('container', {
+      chart: {
+        type: 'heatmap',
+        color: '#ffffff',
+        backgroundColor: 'transparent',
+        marginTop: 40,
+        marginBottom: 80,
+        plotBorderWidth: 1
+      },
+      title: {
+        text: 'Overall Relationships',
+        style: { "color": "#ffffff", "fontSize": "18px" }
+      },
+      xAxis: {
+        categories: {{ heatmap.category }},
+        labels: {
+          style: {
+            color: '#ffffff',
+            fontSize: '14px'
+          }
+        }
+      },
+      yAxis: {
+        categories: {{ heatmap.category }},
+        title: null,
+        labels: {
+          style: {
+            color: '#ffffff',
+            fontSize: '14px'
+          }
+        }
+      },
+      colorAxis: {
+        min: 0,
+        minColor: '#FFFFFF',
+        maxColor: Highcharts.getOptions().colors[0],
+        labels: {
+          style: {
+            color: '#ffffff'
+          }
+        }
+      },
+      legend: {
+        align: 'right',
+        layout: 'vertical',
+        margin: 0,
+        verticalAlign: 'top',
+        y: 25,
+        symbolHeight: 280
+      },
+      tooltip: {
+        formatter: function () {
+          return '<b>' + this.series.yAxis.categories[this.point.y] + ' and ' + this.series.xAxis.categories[this.point.x] +'</b><br><b>' +
+            this.point.value + '</b>';
+        }
+      },
+      series: [{
+        name: 'Relationship Value',
+        borderWidth: 1,
+        data: nullData.concat({{ heatmap.data }}),
+        dataLabels: {
+          enabled: true,
+          color: '#000000'
+        }
+      }]
     });
   });
 </script>

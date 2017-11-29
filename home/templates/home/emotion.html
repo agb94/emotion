@@ -1,12 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 {% include "home/header.html" %}
+{% load static %}
 <body>
   <div class="container">
     {% include "home/navi.html" with title=videoFile menu="Emotional Changes Graph" %}
     <div class="row">
       <div class="col-md-4">
         {% include "home/tab.html" %}
+        <div class="row">
+          <table class="table char-list">
+          {% for id, features in overview %}
+            <tr>
+              <td>
+                <img src="{% static 'crop/'|add:features.centroid_image %}"/>
+              </td>
+              <td>
+                <button class="btn btn-outline-secondary view-button" char-id='{{ id }}'>View {{ id }}'s Emotion</button>
+              </td>
+            </tr>
+          {% endfor %}
+          </table>
+        </div>
       </div>
       <div class="col-md-8">
         <div class="row loading-page">
@@ -15,14 +30,27 @@
         <div class="row loading-page">
           <div class="loader"></div>
         </div>
- 	<div class=container id="container">
+        {% for id, features in overview %}
+        <div class="container emotional-chart" id="container-{{ id }}">
         </div>
+        {% endfor %}
       </div>
     </div>
   </div>
 </body>
 </html>
 <style>
+  .char-list {
+    margin: 20px 0;
+  }
+  .char-list img {
+    width: 5rem;
+  }
+  .char-list td {
+    text-align: center;
+    vertical-align: middle;
+      border: none;
+  }
   .loading-page {
     padding: 30px;
   }
@@ -59,69 +87,112 @@
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
-
 $(document).ready(function(){
-  $.ajax({
-    url : '/emotion',
-    type : 'GET',
-    data : {
-      'videoFile': '{{ videoFile }}',
-      'metadata': '{{ metadata }}',
-      'character_id': {{ character_id }},
-      'csrfmiddlewaretoken': '{{ csrf_token }}'
-    },
-    dataType:'json',
-    success : function(data) {
-      $('.loading-page').addClass('invisible');
-      Highcharts.chart('container', {
-        title: {
-          text: "Character {{ character_id }}'s emotional changes"
+  var loaded = [];
+  $('.view-button').click(function(){
+    var characterId = parseInt($(this).attr('char-id'));
+    $('.emotional-chart').addClass('invisible');
+    loadChart(characterId);
+  });
+  var loadChart = function(id) {
+    $('.view-button').addClass('disabled');
+    $('.emotional-chart#container-' + id).removeClass('invisible'); 
+    console.log(loaded);
+    if (loaded.indexOf(id) != -1) {
+      $('.view-button').removeClass('disabled');   
+      $('.view-button[char-id=' + id + ']').addClass('disabled');   
+    } else {
+      $('.loading-page').removeClass('invisible');
+      $.ajax({
+        url : '/emotion',
+        type : 'GET',
+        data : {
+          'videoFile': '{{ videoFile }}',
+          'metadata': '{{ metadata }}',
+          'character_id': id,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
-        subtitle: {
-          text: 'powered by Emotion API'
-        },
-        yAxis: {
-          title: {
-            text: 'score'
-          }
-        },
-        legend: {
-          layout: 'vertical',
-          align: 'right',
-          verticalAlign: 'middle'
-        },
-        plotOptions: {
-          series: {
-            label: {
-              connectorAllowed: false
+        dataType:'json',
+        success : function(data) {
+          loaded.push(id);
+          $('.loading-page').addClass('invisible');
+          $('.view-button').removeClass('disabled');   
+          $('.view-button[char-id=' + id + ']').addClass('disabled');   
+          Highcharts.chart('container-' + id, {
+            title: {
+              text: "Character " + id + "'s emotional changes",
+              style: { "color": "#ffffff", "fontSize": "18px" }
             },
-            pointStart: 0
-          }
-        },
-        chart: {
-          backgroundColor: '#ffffff'
-        },
-        series: data.emotions,
-        responsive: {
-          rules: [{
-            condition: {
-              maxWidth: 500
+            subtitle: {
+              text: 'powered by Emotion API',
+              style: { "color": "#bbbbbb" }
             },
-            chartOptions: {
-              legend: {
-                layout: 'horizontal',
-                align: 'center',
-                verticalAlign: 'bottom'
+            xAxis: {
+              labels: {
+                style: {
+                  color: '#ffffff'
+                }
               }
+            },
+            yAxis: {
+              title: {
+                text: 'score',
+                style: {
+                  color: '#ffffff'
+                }
+              },
+              labels: {
+                style: {
+                  color: '#ffffff',
+                  fontSize: '14px'
+                }
+              }
+            },
+            legend: {
+              layout: 'vertical',
+              align: 'right',
+              verticalAlign: 'middle'
+            },
+            plotOptions: {
+              series: {
+                label: {
+                  connectorAllowed: false
+                },
+                pointStart: 0
+              }
+            },
+            chart: {
+              backgroundColor: 'transparent',
+              plotBackgroundColor: 'rgba(255,255,255,0.8)'
+            },
+            series: data.emotions,
+            responsive: {
+              rules: [{
+                condition: {
+                  maxWidth: 500
+                },
+                chartOptions: {
+                  legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                  }
+                }
+              }]
             }
-          }]
+          });
+        },
+        error : function(request,error)
+        {
+            alert("Request: "+JSON.stringify(request));
         }
       });
-    },
-    error : function(request,error)
-    {
-        alert("Request: "+JSON.stringify(request));
     }
-  });
+  }
+  {% if character_id %}
+    loadChart({{ character_id }});
+  {% else %}
+    loadChart({{ overview.0.0 }});
+  {% endif %}
 })
 </script>

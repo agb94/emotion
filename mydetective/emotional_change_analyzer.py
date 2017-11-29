@@ -2,7 +2,7 @@
 # import http.client, urllib.request, urllib.parse, urllib.error, base64
 # Python 2
 import httplib, urllib, base64
-import os, time, sys, util
+import os, time, sys, util, random
 
 INTERVAL = 3.0 # msec
 KEYS = [
@@ -64,6 +64,7 @@ def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit
     metadata = util.parse_metadata_file(metadata_path)
     metadata = list(filter(lambda r: r['character_id'] == character_id, metadata))
     metadata = sorted(metadata, key=lambda r: r['frame_number'])
+    random.shuffle(KEYS)
     interval = INTERVAL / len(KEYS)
     if limit:
         count = 0
