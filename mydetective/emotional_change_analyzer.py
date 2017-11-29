@@ -31,7 +31,14 @@ KEYS = [
     'a64b7a4fd5e045ba88bee0fba877e64b',
     '5eff6a75cdcd4d59ad48ad74140de9b2',
     '2904824ec3b14bea80b0e119f610660c',
-    '48964370c2b6476d957e7a460dc9a80e'
+    '48964370c2b6476d957e7a460dc9a80e',
+    'df76720d0532445caa562fe33def7f38',
+    '92ef97c385634301ac06ce6b1067289e',
+    'db27e49c7b0c4adb868fea9b9e6cd1dd',
+    '164c523e5f66445cac7ec8fabef2dd8f',
+    '6cdef4cf98624bd182a058fba63e2810',
+    'b7ecf07a28fb47a5b4074b6d022c0aa2',
+    '9c04dfc4cf7d42d09b6f8d563e47d2a1'
 ]
 headers = {
     'Content-Type': 'application/octet-stream',
