@@ -29,7 +29,8 @@ def analysis(request):
                 if not os.path.exists(metadata_file_path):
                     metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
-            if len(set((map(lambda r: r['character_id'], metadata)))) == 1: 
+            K = len(set((map(lambda r: r['character_id'], metadata))) - {-1})
+            if K == 0: 
                 K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
@@ -46,31 +47,35 @@ def characters(request):
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
     overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
-    return render(request, 'home/characters.html', { 'videoFile': videoFile, 'overview': overview, 'clip': clip, 'metadata': metadata_file_path })
+    return render(request, 'home/characters.html', { 'videoFile': videoFile, 'overview': overview, 'clip': json.dumps(clip), 'metadata': metadata_file_path })
 
 def relationship(request):
     metadata_file_path = request.GET['metadata']
     videoFile = request.GET['videoFile']
-    overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
-    sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
-    relationships = dict(list(map(lambda t: (t[0], { 'image': t[1]['centroid_image'], 'rels': list() }), overview )))
-    heatmap_data = []
-    for key, value in sorted_relationships:
-        a, b = key
-        relationships[a]['rels'].append((b, relationships[b]['image'], value))
-        relationships[b]['rels'].append((a, relationships[a]['image'], value))
-        if a >= b:
-            heatmap_data.append([a,b,round(value,2)])
-        else:
-            heatmap_data.append([b,a,round(value,2)])
-    character_ids = []
-    for row in overview:
-        character_ids.append(row[0])
-    character_ids.sort()
-    for data in heatmap_data:
-        data[0] = character_ids.index(data[0])
-        data[1] = character_ids.index(data[1])
-    return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'relationships': relationships, 'metadata': metadata_file_path, 'heatmap': { 'category': character_ids, 'data': heatmap_data }})
+    if request.is_ajax():
+        overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
+        sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
+        relationships = dict(list(map(lambda t: (t[0], { 'image': t[1]['centroid_image'], 'rels': list() }), overview )))
+        heatmap_data = []
+        for key, value in sorted_relationships:
+            a, b = key
+            relationships[a]['rels'].append((b, relationships[b]['image'], value))
+            relationships[b]['rels'].append((a, relationships[a]['image'], value))
+            if a >= b:
+                heatmap_data.append([a,b,round(value,2)])
+            else:
+                heatmap_data.append([b,a,round(value,2)])
+        character_ids = []
+        for row in overview:
+            character_ids.append(row[0])
+        character_ids.sort()
+        for data in heatmap_data:
+            data[0] = character_ids.index(data[0])
+            data[1] = character_ids.index(data[1])
+        data = json.dumps({ 'relationships': relationships, 'heatmap': { 'category': character_ids, 'data': heatmap_data }})
+        return HttpResponse(data, content_type='application/json')
+    else:
+        return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'metadata': metadata_file_path })
 
 def emotion(request):
     metadata_file_path = request.GET['metadata']
@@ -89,3 +94,18 @@ def emotion(request):
         overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
         overview = sorted(overview, key=lambda t: t[0])
         return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'overview': overview, 'character_id': character_id })
+
+def images(request):
+    if request.is_ajax():
+        metadata_file_path = request.GET['metadata']
+        videoFile = request.GET['videoFile']
+        start = int(request.GET['start'])
+        end = int(request.GET['end'])
+        char_id = int(request.GET['charId'])
+        metadata = mydetective.parse_metadata_file(metadata_file_path)
+        if start == -1 and end == -1:
+            image_file_paths = map(lambda r: (r['frame_number'],r['image_file_path']), filter(lambda r: r['character_id'] == char_id, metadata))
+        else:
+            image_file_paths = map(lambda r: (r['frame_number'],r['image_file_path']), filter(lambda r: r['character_id'] == char_id and r['frame_number'] in range(start, end+1), metadata))
+        data = json.dumps(image_file_paths)
+        return HttpResponse(data, content_type='application/json')

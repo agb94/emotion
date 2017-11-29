@@ -2,6 +2,20 @@
 <html lang="en">
 {% include "home/header.html" %}
 <body>
+  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="gallery" aria-labelledby="gallery" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Face Images</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="gallery-body">
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="container">
     {% include "home/navi.html" with title=videoFile menu="Character Overviews" %}
     <div class="row">
@@ -11,11 +25,13 @@
       <div class="col-md-8">
       {% load static %}
       {% load mathfilters %}
+        <div id="container"></div>
+        <p class="text-right"><small>Sorted by the level of Importance</small></p> 
       {% for char_id, features in overview %}
         <div class="row character-card">
           <div class="col-md-3">
             <p class="character-label text-center">Character {{ char_id }}</p>
-            <img src="{% static 'crop/'|add:features.centroid_image %}" style="width: 100%;"/>
+            <img src="{% static 'crop/'|add:features.centroid_image %}" class="open-gallery" char-id={{ char_id }}>
           </div>
           <div class="col-md-9">
             <div class="star-ratings-css">
@@ -24,12 +40,11 @@
             </div>
             <span class="importance">
               {{ features.level_of_importance|floatformat:2 }}
-          </span>
-          <ul>
-              <!--li>{{ features.level_of_importance|floatformat:3 }}</li>
-              <li>{{ features.level_of_importance|div:overview.0.1.level_of_importance }}</li-->
-              <li>The number of appearances: {{ features.appearance_count }}</li>
+            </span>
+            <ul>
+              <li>This character appeard {{ features.appearance_count }} times.</li>
             </ul>
+            <a class="btn btn-outline-secondary emotion-button" href="/emotion?videoFile={{ videoFile }}&metadata={{ metadata }}&character_id={{ char_id }}">View {{ char_id }}'s Emotion</a>
           </div>
         </div>
       {% endfor %}
@@ -41,6 +56,7 @@
 
 <style>
 .character-card {
+  position: relative;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 0.25rem;
@@ -84,3 +100,156 @@
   font-size: 2rem;
   font-weight: 100;
 }
+.open-gallery {
+  cursor: pointer;
+  width: 100%;
+}
+.emotion-button {
+  position: absolute;
+  bottom: 0rem;
+  right: 2rem;
+  color: white;
+}
+#container {
+  min-width: 300px;
+  max-width: 800px;
+  /*height: 300px;*/
+  margin: 0 auto 1rem;
+}
+#gallery {
+  color: black;
+}
+#gallery .modal-dialog {
+  margin-top: 5rem;
+}
+#gallery #gallery-body {
+  text-align: center;
+}
+#gallery .face {
+  width: 6rem;
+  height: 6rem;
+  padding: 1px;
+}
+</style>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/xrange.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<script>
+$(document).ready(function(){
+  var clip = JSON.parse('{{ clip|safe }}');
+  console.log(clip);
+  var characters = [];
+  var chartData = [];
+  for (id in clip) {
+    characters.push(id);
+    for (i in clip[id]){
+      var scene = clip[id][i];
+      chartData.push({
+        x: scene[0],
+        x2: scene[1],
+        y: characters.indexOf(id)
+      });
+    }
+  }
+  var openGallery = function(start, end, charId){
+    $.ajax({
+      url : '/images',
+      type : 'GET',
+      data : {
+        'videoFile': '{{ videoFile }}',
+        'metadata': '{{ metadata }}',
+        'start': start,
+        'end': end,
+        'charId': charId,
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      dataType:'json',
+      success : function(data) {
+        $('#gallery-body').html('');
+        for (i in data) {
+          frameNumber = data[i][0];
+          imagePath = data[i][1];
+          $('#gallery-body').append("<img class='face' src='/static/crop/"+imagePath+"' data-toggle='tooltip' data-placement='top' title='frame: " + frameNumber +"' >");
+        }
+        $('#gallery').modal('show');
+        $('body').tooltip({
+          trigger: 'hover',
+          animation: false,
+          selector: 'img.face'
+        });
+      },
+      error : function(request,error)
+      {
+          alert("Request: "+JSON.stringify(request));
+      }
+    });
+  };
+  $('.open-gallery').click(function(){
+    openGallery(-1, -1, $(this).attr('char-id'));
+  });
+  Highcharts.chart('container', {
+    chart: {
+        type: 'xrange',
+        color: '#ffffff',
+        backgroundColor: 'transparent',
+        events: {
+          click: function(e) {
+            console.log(e.xAxis[0].value,e.yAxis[0].value);
+          }
+        }
+    },
+    title: {
+        text: 'Appearance',
+        style: { "color": "#ffffff", "fontSize": "18px" }
+    },
+    xAxis: {
+        title: {
+          text: 'frame number',
+          style: { "color": "#ffffff" }
+        },
+        type: 'linear',
+        labels: {
+          style: {
+            color: '#ffffff',
+            fontSize: '14px'
+          }
+        }
+    },
+    yAxis: {
+        title: {
+            text: 'Character ID',
+            style: { "color": "#ffffff" }
+        },
+        categories: characters,
+        reversed: true,
+        labels: {
+          style: {
+            color: '#ffffff',
+            fontSize: '14px'
+          }
+        }
+    },
+    series: [{
+        name: 'appearance of',
+        // pointPadding: 0,
+        // groupPadding: 0,
+        borderColor: 'transparent',
+        borderRadius: 0,
+        pointWidth: 30,
+        data: chartData,
+        events: {
+          click: function(e) {
+            var start = e.point.x;
+            var end = e.point.x2;
+            var charId = parseInt(characters[e.point.y]);
+            openGallery(start, end, charId);
+          }
+        }
+    }],
+    legend: {
+      enabled: false
+    }
+  });
+});
+</script>

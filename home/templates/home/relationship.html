@@ -10,60 +10,46 @@
         {% include "home/tab.html" %}
         <div class="row">
           <table class="table char-list">
-          {% for key, value in relationships.iteritems %}
-            <tr>
-              <td>
-                <img src="{% static 'crop/'|add:value.image %}"/>
-              </td>
-              <td>
-                <button class="btn btn-outline-secondary view-button" char-id='{{ key }}'>View {{ key }}'s Relationship</button>
-              </td>
-            </tr>
-          {% endfor %}
           </table>
         </div>
       </div>
-      <div class="col-md-8">
-        <div id="container" style="height: 400px; min-width: 310px; max-width: 800px; margin: 0 auto;"></div>
-      {% for key, value in relationships.iteritems %}
-        <div class="char-rel invisible" char-id='{{ key }}'>
-          <h4 class="char-rel-list-title"><span class="oi oi-heart"></span> Character {{ key }}'s Relationship</h4>
-          <table class="table char-rel-list" id="char-{{ key }}">
-            <tr>
-              <th>
-                Character
-              </th>
-              <th>
-                Image
-              </th>
-              <th>
-                Level of Relationship
-              </th>
-            </tr>
-            {% for rel in value.rels %}
-            <tr>
-              <td style="width: 4rem;">
-                {{ rel.0 }}
-              </td>
-              <td style="width: 4rem;">
-                <img src="{% static 'crop/'|add:rel.1 %}" />
-              </td>
-              <td>
-                <div class="progress">
-                  <div class="progress-bar" role="progressbar" style="width: {{ rel.2 }}%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">{{ rel.2|floatformat:1 }}%</div>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </table>
+      <div class="col-md-8 contents">
+        <div class="row loading-page">
+          <h2 id="loading-message" class="text-center">Calculating...</h2>
         </div>
-      {% endfor %}
+        <div class="row loading-page">
+          <div class="loader"></div>
+        </div>
+
+        <div id="container" style="height: 400px; min-width: 310px; max-width: 800px; margin: 0 auto;"></div>
       </div>
     </div>
   </div>
 </body>
 </html>
 <style>
+.loading-page {
+  padding: 30px;
+}
+.loading-page #loading-message {
+  color: white;
+  font-weight: 100;
+  width: 100%;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loader {
+  border: 10px solid #f3f3f3; /* Light grey */
+  border-top: 10px solid #636363; /* grey */
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
 .invisible {
   display: none;
 }
@@ -103,87 +89,116 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
   $(document).ready(function(){
-    var activate = function(id){
-      $('.char-rel[char-id=' + id + ']').removeClass('invisible');
-      $('.view-button[char-id=' + id + ']').addClass('disabled');
-    };
-    $('.view-button').click(function(){
-      var characterId = $(this).attr('char-id');
-      $('.char-rel').addClass('invisible');
-      $('.view-button').removeClass('disabled');
-      activate(characterId);
-    });
-    nullData = [];
-    counter = 0;
-    {% for charLabel in heatmap.category %}
-    nullData.push([counter,counter,null])
-    counter += 1;
-    {% endfor %}
-    Highcharts.chart('container', {
-      chart: {
-        type: 'heatmap',
-        color: '#ffffff',
-        backgroundColor: 'transparent',
-        marginTop: 40,
-        marginBottom: 80,
-        plotBorderWidth: 1
+    $.ajax({
+      url : '/relationship',
+      type : 'GET',
+      data : {
+        'videoFile': '{{ videoFile }}',
+        'metadata': '{{ metadata }}',
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
       },
-      title: {
-        text: 'Overall Relationships',
-        style: { "color": "#ffffff", "fontSize": "18px" }
-      },
-      xAxis: {
-        categories: {{ heatmap.category }},
-        labels: {
-          style: {
+      dataType:'json',
+      success : function(data) {
+        nullData = [];
+        for (i=0; i<data.heatmap.category.length;i++) {
+          nullData.push([i,i,null]);
+        }
+        console.log(nullData.concat( data.heatmap.data ));
+        $('.loading-page').addClass('invisible');
+        Highcharts.chart('container', {
+          chart: {
+            type: 'heatmap',
             color: '#ffffff',
-            fontSize: '14px'
+            backgroundColor: 'transparent',
+            marginTop: 40,
+            marginBottom: 80,
+            plotBorderWidth: 1
+          },
+          title: {
+            text: 'Overall Relationships',
+            style: { "color": "#ffffff", "fontSize": "18px" }
+          },
+          xAxis: {
+            categories: data.heatmap.category,
+            labels: {
+              style: {
+                color: '#ffffff',
+                fontSize: '14px'
+              }
+            }
+          },
+          yAxis: {
+            categories: data.heatmap.category,
+            title: null,
+            labels: {
+              style: {
+                color: '#ffffff',
+                fontSize: '14px'
+              }
+            }
+          },
+          colorAxis: {
+            min: 0,
+            minColor: '#FFFFFF',
+            maxColor: Highcharts.getOptions().colors[0],
+            labels: {
+              style: {
+                color: '#ffffff'
+              }
+            }
+          },
+          legend: {
+            align: 'right',
+            layout: 'vertical',
+            margin: 0,
+            verticalAlign: 'top',
+            y: 25,
+            symbolHeight: 280
+          },
+          tooltip: {
+            formatter: function () {
+              return '<b>' + this.series.yAxis.categories[this.point.y] + ' and ' + this.series.xAxis.categories[this.point.x] +'</b><br><b>' +
+                this.point.value + '</b>';
+            }
+          },
+          series: [{
+            name: 'Relationship Value',
+            borderWidth: 1,
+            data: nullData.concat( data.heatmap.data ),
+            dataLabels: {
+              enabled: true,
+              color: '#000000'
+            }
+          }]
+        });
+        for (char_id in data.relationships) {
+          var rels = data.relationships[char_id].rels;
+          var image = data.relationships[char_id].image;
+          $('.char-list').append("<tr><td><img src='/static/crop/" + image + "'/></td><td><button class='btn btn-outline-secondary view-button' char-id=" + char_id + ">View " + char_id + "'s Relationship</button></td></tr>");
+          var relDiv = "<div class='char-rel invisible' char-id='"+char_id+"'><h4 class='char-rel-list-title'><span class='oi oi-heart'></span> Character "+char_id+"'s Relationship</h4><table class='table char-rel-list' id='char-"+char_id+"'><tr><th>Character</th><th>Image</th><th>Level of Relationship</th></tr>";
+          for (i in rels) {
+            var rel = rels[i];
+            relDiv += "<tr><td style='width: 4rem'>"+rel[0]+"</td><td style='width: 4rem;'><img src='static/crop/" + rel[1] + "' /></td><td><div class='progress'><div class='progress-bar' role='progressbar' style='width: "+ rel[2] +"%' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100'>" + Math.round(rel[2] * 100) / 100 + "%</div></div></td></tr>";
           }
+          relDiv +="</table></div>";
+          
+          $('.contents').append(relDiv);
+          var activate = function(id){
+            $('.char-rel[char-id=' + id + ']').removeClass('invisible');
+            $('.view-button[char-id=' + id + ']').addClass('disabled');
+          };
+          $('.view-button').click(function(){
+            var characterId = $(this).attr('char-id');
+            $('.char-rel').addClass('invisible');
+            $('.view-button').removeClass('disabled');
+            activate(characterId);
+          });
         }
       },
-      yAxis: {
-        categories: {{ heatmap.category }},
-        title: null,
-        labels: {
-          style: {
-            color: '#ffffff',
-            fontSize: '14px'
-          }
-        }
-      },
-      colorAxis: {
-        min: 0,
-        minColor: '#FFFFFF',
-        maxColor: Highcharts.getOptions().colors[0],
-        labels: {
-          style: {
-            color: '#ffffff'
-          }
-        }
-      },
-      legend: {
-        align: 'right',
-        layout: 'vertical',
-        margin: 0,
-        verticalAlign: 'top',
-        y: 25,
-        symbolHeight: 280
-      },
-      tooltip: {
-        formatter: function () {
-          return '<b>' + this.series.yAxis.categories[this.point.y] + ' and ' + this.series.xAxis.categories[this.point.x] +'</b><br><b>' +
-            this.point.value + '</b>';
-        }
-      },
-      series: [{
-        name: 'Relationship Value',
-        borderWidth: 1,
-        data: nullData.concat({{ heatmap.data }}),
-        dataLabels: {
-          enabled: true,
-          color: '#000000'
-        }
-      }]
+      error : function(request,error)
+      {
+          alert("Request: "+JSON.stringify(request));
+      }
     });
   });
 </script>

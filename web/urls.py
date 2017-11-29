@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^analysis', views.analysis),
     url(r'^characters', views.characters),
     url(r'^relationship', views.relationship),
-    url(r'^emotion', views.emotion)
+    url(r'^emotion', views.emotion),
+    url(r'^images', views.images)
 ]
