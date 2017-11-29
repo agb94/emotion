@@ -99,6 +99,12 @@
       },
       dataType:'json',
       success : function(data) {
+        var activate = function(id){
+          $('.char-rel').addClass('invisible');
+          $('.char-rel[char-id=' + id + ']').removeClass('invisible');
+          $('.view-button').removeClass('disabled');
+          $('.view-button[char-id=' + id + ']').addClass('disabled');
+        };
         nullData = [];
         for (i=0; i<data.heatmap.category.length;i++) {
           nullData.push([i,i,null]);
@@ -168,6 +174,11 @@
             dataLabels: {
               enabled: true,
               color: '#000000'
+            },
+            events: {
+              click: function(e){
+                activate(data.heatmap.category[e.point.y]);
+              }
             }
           }]
         });
@@ -183,14 +194,8 @@
           relDiv +="</table></div>";
           
           $('.contents').append(relDiv);
-          var activate = function(id){
-            $('.char-rel[char-id=' + id + ']').removeClass('invisible');
-            $('.view-button[char-id=' + id + ']').addClass('disabled');
-          };
           $('.view-button').click(function(){
             var characterId = $(this).attr('char-id');
-            $('.char-rel').addClass('invisible');
-            $('.view-button').removeClass('disabled');
             activate(characterId);
           });
         }

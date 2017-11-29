@@ -24,5 +24,6 @@ urlpatterns = [
     url(r'^characters', views.characters),
     url(r'^relationship', views.relationship),
     url(r'^emotion', views.emotion),
-    url(r'^images', views.images)
+    url(r'^images', views.images),
+    url(r'^frame', views.frame)
 ]

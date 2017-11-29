@@ -1,5 +1,5 @@
 import os, sys
-from .util import *
+from .util import parse_metadata_file
 
 def character_analyzer(metadata_path, frame_interval=30):
     """
@@ -58,7 +58,7 @@ def character_analyzer(metadata_path, frame_interval=30):
                         tmp[char_id].append(current_frame)
                     else:
                         if tmp[char_id][0] == tmp[char_id][-1]:
-                            frame_list[char_id].append([tmp[char_id][0]])
+                            frame_list[char_id].append([tmp[char_id][0], tmp[char_id][0]])
                         else:
                             frame_list[char_id].append([tmp[char_id][0], tmp[char_id][-1]])
                         tmp[char_id] = []
@@ -70,7 +70,7 @@ def character_analyzer(metadata_path, frame_interval=30):
         for char_id in tmp:
             if len(tmp[char_id]) != 0:
                 if tmp[char_id][0] == tmp[char_id][-1]:
-                    frame_list[char_id].append([tmp[char_id][0]])
+                    frame_list[char_id].append([tmp[char_id][0], tmp[char_id][0]])
                 else:
                     frame_list[char_id].append([tmp[char_id][0], tmp[char_id][-1]])
             else:

@@ -45,13 +45,13 @@ def analysis(request):
 
 def characters(request):
     metadata_file_path = request.GET['metadata']
-    videoFile = request.GET['videoFile']
+    video_file = request.GET['videoFile']
     overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
-    return render(request, 'home/characters.html', { 'videoFile': videoFile, 'overview': overview, 'clip': json.dumps(clip), 'metadata': metadata_file_path })
+    return render(request, 'home/characters.html', { 'videoFile': video_file, 'overview': overview, 'clip': json.dumps(clip), 'metadata': metadata_file_path })
 
 def relationship(request):
     metadata_file_path = request.GET['metadata']
-    videoFile = request.GET['videoFile']
+    video_file = request.GET['videoFile']
     if request.is_ajax():
         overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
         sorted_relationships = mydetective.sorted_relationship(metadata_file_path)
@@ -75,15 +75,15 @@ def relationship(request):
         data = json.dumps({ 'relationships': relationships, 'heatmap': { 'category': character_ids, 'data': heatmap_data }})
         return HttpResponse(data, content_type='application/json')
     else:
-        return render(request, 'home/relationship.html', { 'videoFile': videoFile, 'metadata': metadata_file_path })
+        return render(request, 'home/relationship.html', { 'videoFile': video_file, 'metadata': metadata_file_path })
 
 def emotion(request):
     metadata_file_path = request.GET['metadata']
-    videoFile = request.GET['videoFile']
+    video_file = request.GET['videoFile']
     if request.is_ajax():
         character_id=int(request.GET['character_id'])
         crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
-        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=20)
+        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=10)
         data = json.dumps({ 'emotions': emotions })
         return HttpResponse(data, content_type='application/json')
     else:
@@ -93,12 +93,21 @@ def emotion(request):
             character_id = None
         overview, clip = mydetective.get_overview_and_clip(metadata_file_path)
         overview = sorted(overview, key=lambda t: t[0])
-        return render(request, 'home/emotion.html', { 'videoFile': videoFile, 'metadata': metadata_file_path, 'overview': overview, 'character_id': character_id })
+        return render(request, 'home/emotion.html', { 'videoFile': video_file, 'metadata': metadata_file_path, 'overview': overview, 'character_id': character_id })
 
+def frame(request):
+    if request.is_ajax():
+        video_file = request.GET['videoFile']
+        frame_number= int(request.GET['frameNumber'])
+        frame_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'frame')
+        frame_image_path = mydetective.save_frame(video_file, frame_number, frame_root_dir)
+        data = json.dumps({'frame_image_path': frame_image_path})
+        return HttpResponse(data, content_type='application/json')
+        
 def images(request):
     if request.is_ajax():
         metadata_file_path = request.GET['metadata']
-        videoFile = request.GET['videoFile']
+        video_file = request.GET['videoFile']
         start = int(request.GET['start'])
         end = int(request.GET['end'])
         char_id = int(request.GET['charId'])

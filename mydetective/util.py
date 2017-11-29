@@ -2,7 +2,30 @@ import csv
 import copy
 import os
 import cv2
-from .character_analyzer import character_analyzer
+
+def save_frame(video_file, frame_number, frame_root_dir):
+    if not video_file.endswith('avi') and not video_file.endswith('mkv'):
+        video_name = '-'.join(video_file.split('.')[0].split('-')[:-1])
+        print (video_name)
+        if os.path.exists(video_name + '.avi'):
+            video_file = video_name + '.avi'
+        elif os.path.exists(video_name + '.mkv'):
+            video_file = video_name + '.mkv'
+    print (video_file)
+    cap = cv2.VideoCapture(video_file)
+    video_name = os.path.splitext(os.path.basename(video_file))[0]
+    frame_dir = os.path.join(frame_root_dir, video_name)
+    frame_img_path = os.path.join(video_name, "{}.jpg".format(frame_number))
+    if os.path.exists(os.path.join(frame_root_dir, frame_img_path)):
+        return frame_img_path
+    if not os.path.isdir(frame_dir):
+        os.mkdir(frame_dir)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+    ret, frame = cap.read()
+    cv2.imwrite(os.path.join(frame_root_dir, frame_img_path), frame)
+    cap.release()
+    cv2.destroyAllWindows()
+    return frame_img_path
 
 def get_metadata_file_path(video_file_path, interval=30, interval_sec=None):
     if interval_sec:
@@ -19,8 +42,9 @@ def get_overview_and_clip(metadata_file_path):
     path, extension = os.path.splitext(metadata_file_path)
     overview_path = path + '-characters' + extension
     clip_path = path + '-clip' + extension
-    if not os.path.exists(overview_path) and os.path.exists(clip_path):
-        overview_path, clip_path = mydetective.character_analyzer(metadata_file_path) 
+    if not os.path.exists(overview_path) or not os.path.exists(clip_path):
+        from .character_analyzer import character_analyzer
+        overview_path, clip_path = character_analyzer(metadata_file_path) 
     return (parse_overview_file(overview_path), parse_clip_file_to_dict(clip_path))
         
 def parse_metadata_file(metadata_file_path):
