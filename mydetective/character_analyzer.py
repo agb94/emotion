@@ -85,11 +85,11 @@ def character_analyzer(metadata_path, frame_interval=30):
             importance[char_id] *= character_count[char_id]
         
         # write on characters_overview.tsv
-        writing = "character_id\tappearance_count\tlevel_of_importance\tcentroid_image"
+        writing = "character_id\tappearance_count\tlevel_of_importance\tcentroid_image\tname\tdeleted"
         overview.write(writing + "\n")
 
         for char_id in char_ids:
-            line = "{}\t{}\t{}\t{}".format(char_id, character_count[char_id], importance[char_id], centroid_image[char_id])
+            line = "{}\t{}\t{}\t{}\t{}\t{}".format(char_id, character_count[char_id], importance[char_id], centroid_image[char_id], '', 0)
             overview.write(line + "\n")
         
         # write on clip.tsv

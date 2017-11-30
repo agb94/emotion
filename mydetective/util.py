@@ -38,11 +38,11 @@ def get_metadata_file_path(video_file_path, interval=30, interval_sec=None):
     metadata_file_path = "{}-{}.tsv".format(os.path.join(os.path.dirname(video_file_path), video_name), interval) 
     return metadata_file_path
 
-def get_overview_and_clip(metadata_file_path):
+def get_overview_and_clip(metadata_file_path, new=False):
     path, extension = os.path.splitext(metadata_file_path)
     overview_path = path + '-characters' + extension
     clip_path = path + '-clip' + extension
-    if not os.path.exists(overview_path) or not os.path.exists(clip_path):
+    if new or not os.path.exists(overview_path) or not os.path.exists(clip_path):
         from .character_analyzer import character_analyzer
         overview_path, clip_path = character_analyzer(metadata_file_path) 
     return (parse_overview_file(overview_path), parse_clip_file_to_dict(clip_path))
@@ -92,11 +92,22 @@ def parse_overview_file(overview_file_path):
             overview[int(row['character_id'])]= {
                 'appearance_count': int(row['appearance_count']),
                 'level_of_importance': float(row['level_of_importance']),
-                'centroid_image': row['centroid_image']
+                'centroid_image': row['centroid_image'],
+                'name': row['name'],
+                'deleted': bool(int(row['deleted']))
             }
     sorted_overview = sorted(overview.items(), key=lambda t: t[1]['level_of_importance'])
     sorted_overview.reverse()
     return sorted_overview
+
+def write_overview_file(metadata_file_path, overview):
+    path, extension = os.path.splitext(metadata_file_path)
+    overview_file_path = path + '-characters' + extension
+    with open(overview_file_path, 'w') as tsvfile:
+        columns = ['character_id', 'appearance_count', 'level_of_importance', 'centroid_image', 'name', 'deleted']
+        tsvfile.write("\t".join(columns) + "\n")
+        for k, v in overview:
+            tsvfile.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(k, v['appearance_count'], v['level_of_importance'], v['centroid_image'], v['name'], int(v['deleted'])))
 
 def parse_clip_file_to_dict(clip_file_path):
     clip = dict()

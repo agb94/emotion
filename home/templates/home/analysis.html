@@ -72,6 +72,7 @@
 $(document).ready(function(){
   var kField = $('span#K');
   var tab = $('#tab');
+  var metadata_file_path = "";
   $.ajax({
       url : '/analysis',
       type : 'GET',
@@ -85,6 +86,7 @@ $(document).ready(function(){
         kField.text(data['K']);
         params = '';
         params += 'videoFile=' + escape('{{ videoFile }}');
+        metadata_file_path = data['metadata_file_path'];
         params += '&metadata=' + escape(data['metadata_file_path']);
         $('#tab li a#characters').attr("href", "/characters?" + params);
         $('#tab li a#relationship').attr("href", "/relationship?" + params);
@@ -96,8 +98,57 @@ $(document).ready(function(){
         var table = $('table#characters-info');
         for (i = 0; i < characters.length; i++) {
           var ch = characters[i];
-          table.append("<tr class='character-info' character-id=" + ch.character_id +"><td>"+ch.character_id+"</td><td><img class='character-image' src='/static/crop/" + ch.image_file_path + "'></td><td><input type='text' class='form-control' value='" + ch.character_id + "'></td><td><div class='btn-group' role='group'><button class='btn btn-secondary'>Apply</button><button class='btn btn-danger'>Delete</button></div></td></tr>")  
+          table.append("<tr class='character-info' char-id=" + ch.character_id +"><td>"+ch.character_id+"</td><td><img class='character-image' src='/static/crop/" + ch.image_file_path + "'></td><td><input type='text' class='form-control' id='name-of-" + ch.character_id+ "' placeholder='Enter name'></td><td><div class='btn-group' role='group'><button class='btn btn-secondary apply-button' char-id=" + ch.character_id + ">Apply</button><button class='btn btn-danger delete-button' char-id=" + ch.character_id + ">Delete</button></div></td></tr>"); 
         } 
+        $('.delete-button').click(function(){
+          var char_id = $(this).attr('char-id');
+          console.log("Delete " + char_id);
+          $.ajax({
+            url : '/delete',
+            type : 'POST',
+            data : {
+              'charId': char_id,
+              'metadata': metadata_file_path,
+              'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            dataType:'json',
+            success : function(data) {
+              if (data.success) {
+                $('.character-info[char-id='+char_id+']').addClass('invisible');
+                alert("Successfully deleted!");
+              }
+            },
+            error : function(request,error)
+            {
+                alert("Request: "+JSON.stringify(request));
+            }
+          });
+        });
+        $('.apply-button').click(function(){
+          var char_id = $(this).attr('char-id');
+          var nameInput = $('#name-of-' + char_id).val();
+          console.log(nameInput);
+          $.ajax({
+            url : '/set_name',
+            type : 'POST',
+            data : {
+              'charId': char_id,
+              'name': nameInput,
+              'metadata': metadata_file_path,
+              'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            dataType:'json',
+            success : function(data) {
+              if (data.success) {
+                alert("Successfully saved!");
+              }
+            },
+            error : function(request,error)
+            {
+                alert("Request: "+JSON.stringify(request));
+            }
+          });
+        });
         //$('#characters-info').text(JSON.stringify(data['characters']));
       },
       error : function(request,error)

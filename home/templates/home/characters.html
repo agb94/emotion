@@ -32,6 +32,7 @@
           <div class="col-md-3">
             <p class="character-label text-center">Character {{ char_id }}</p>
             <img src="{% static 'crop/'|add:features.centroid_image %}" class="open-gallery" char-id={{ char_id }}>
+            <p class="name-label text-center"> {{ features.name }} </p>
           </div>
           <div class="col-md-9">
             <div class="star-ratings-css">
@@ -68,6 +69,13 @@
   font-size: 1.5rem;
   font-weight: 100;
   margin-bottom: 10px;
+}
+.character-card .name-label {
+  font-weight: 100;
+  margin-top: 1rem;
+  margin-bottom: 0rem;
+  font-size: 2rem;
+  font-family: cursive;
 }
 .star-ratings-css {
   display: inline-block;

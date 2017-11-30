@@ -13,10 +13,10 @@
           {% for id, features in overview %}
             <tr>
               <td>
-                <img src="{% static 'crop/'|add:features.centroid_image %}"/>
-              </td>
-              <td>
-                <button class="btn btn-outline-secondary view-button" char-id='{{ id }}'>View {{ id }}'s Emotion</button>
+                <span class="name-tag">{{ features.name }}</span>
+                <button class="btn btn-outline-secondary view-button" char-id='{{ id }}'>
+                <img src="{% static 'crop/'|add:features.centroid_image %}"/> View {{ id }}'s Emotion
+                </button>
               </td>
             </tr>
           {% endfor %}
@@ -45,14 +45,35 @@
   .char-list {
     margin: 20px 0;
   }
-  .char-list img {
-    width: 5rem;
-  }
+
   .char-list td {
+    position: relative;
     text-align: center;
     vertical-align: middle;
-      border: none;
+    border: none;
+    width: 100%;
   }
+  .char-list td .name-tag {
+    position: absolute;
+    left: -2.2rem;
+    top: 1.9rem;
+    font-family: cursive;
+    font-size: 1.2rem;
+    text-shadow: 0px 0px 0.5rem black;
+    z-index: 5;
+    width: 6rem;
+    text-align: center;
+  }
+  .char-list td .view-button {
+    color: white;
+    width: 100%;
+  }
+  .char-list td .view-button img {
+    width: 3rem;
+    border-radius: 1.5rem;
+    margin-right: 1rem;
+  }
+
   .loading-page {
     padding: 30px;
   }
@@ -85,11 +106,24 @@
     display: none;
   }
   #screen {
+    position: relative;
     margin: 3rem;
   }
   #screen .frame {
     width: 100%;
     border: 1px solid white;
+  }
+  #screen .frame_number {
+    position: absolute;
+    padding: 0.5rem;
+    color: white;
+    background: rgba(0,0,0,0.5);
+    right: 0px;
+    top: 0px;
+    font-weight: 100;
+    font-size: 1rem;
+    border: 1px solid white;
+    font-family: monospace;
   }
 </style>
 <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -181,7 +215,7 @@ $(document).ready(function(){
                       },
                       dataType:'json',
                       success : function(data) {
-                        $('#screen').html("<img class='frame' src='/static/frame/"+data['frame_image_path']+"' >");
+                        $('#screen').html("<img class='frame' src='/static/frame/"+data['frame_image_path']+"' ><span class='frame_number'>frame #"+data['frame_number']+"</span>");
                       },
                       error : function(request,error)
                       {

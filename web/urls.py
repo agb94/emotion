@@ -25,5 +25,7 @@ urlpatterns = [
     url(r'^relationship', views.relationship),
     url(r'^emotion', views.emotion),
     url(r'^images', views.images),
-    url(r'^frame', views.frame)
+    url(r'^frame', views.frame),
+    url(r'^set_name', views.set_name),
+    url(r'^delete', views.delete)
 ]
