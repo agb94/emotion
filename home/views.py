@@ -26,6 +26,8 @@ def analysis(request):
             else:
                 interval_sec = int(request.GET['interval'])
                 metadata_file_path = mydetective.get_metadata_file_path(video_file_path, interval_sec=interval_sec)
+                if os.path.exists(metadata_file_path+'.oracle'):
+                    shutil.copyfile(metadata_file_path+'.oracle', metadata_file_path)
                 if not os.path.exists(metadata_file_path):
                     metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
