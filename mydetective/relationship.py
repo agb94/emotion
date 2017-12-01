@@ -29,9 +29,7 @@ def get_relationship(metadata):
         for other in list(filter(lambda p: p != character and not relationship_key(character, p) in relationship, appearance)):
             key = relationship_key(character, other)
             relationship[key] = 0.0
-    print(relationship)
     for character in appearance:
-        print('character', character)
         for i in range(len(appearance[character]) - 1):
             start = appearance[character][i]
             end = appearance[character][i+1]
@@ -42,7 +40,6 @@ def get_relationship(metadata):
             for other in counter:
                 key = relationship_key(character, other)
                 relationship[key] += weight * frequency_weight[other]
-        print(relationship)
     if len(relationship.values()) > 0:
         _max = max(relationship.values())
         if _max != 0:

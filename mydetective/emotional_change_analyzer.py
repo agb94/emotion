@@ -97,4 +97,3 @@ if __name__ == '__main__':
     characters_emotion(sys.argv[1], int(sys.argv[2]))
     #Added	for test
     ret_list = characters_emotion(sys.argv[1], int(sys.argv[2]))
-    print(ret_list)

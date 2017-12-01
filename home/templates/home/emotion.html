@@ -31,8 +31,8 @@
           <div class="loader"></div>
         </div>
         {% for id, features in overview %}
-        <div class="container emotional-chart" id="container-{{ id }}">
-        </div>
+        <div class="score-chart" id="pie-container-{{ id }}"></div>
+        <div class="emotional-chart" id="container-{{ id }}"></div>
         {% endfor %}
         <div id="screen">
         </div>
@@ -95,13 +95,6 @@
     animation: spin 1s linear infinite;
     margin: auto;
   }
-  #container {
-    background: none;
-    min-width: 310px;
-    max-width: 800px;
-    height: 400px;
-    margin: 0 auto
-  }
   .invisible {
     display: none;
   }
@@ -134,6 +127,7 @@ $(document).ready(function(){
   var loaded = [];
   $('.view-button').click(function(){
     var characterId = parseInt($(this).attr('char-id'));
+    $('.score-chart').addClass('invisible');
     $('.emotional-chart').addClass('invisible');
     loadChart(characterId);
   });
@@ -141,6 +135,7 @@ $(document).ready(function(){
     $('#screen').html("");
     $('.view-button').addClass('disabled');
     $('.emotional-chart#container-' + id).removeClass('invisible'); 
+    $('.score-chart#pie-container-' + id).removeClass('invisible'); 
     console.log(loaded);
     if (loaded.indexOf(id) != -1) {
       $('.view-button').removeClass('disabled');   
@@ -162,14 +157,46 @@ $(document).ready(function(){
           $('.loading-page').addClass('invisible');
           $('.view-button').removeClass('disabled');   
           $('.view-button[char-id=' + id + ']').addClass('disabled');   
-          Highcharts.chart('container-' + id, {
+	  
+          Highcharts.chart('pie-container-' + id, {
+            chart: {
+              backgroundColor: 'transparent',
+              plotBackgroundColor: null,
+              plotBorderWidth: null,
+              plotShadow: false,
+              type: 'pie'
+            },
             title: {
-              text: "Character " + id + "'s emotional changes",
+              text: 'Average emotion scores',
               style: { "color": "#ffffff", "fontSize": "18px" }
             },
-            subtitle: {
-              text: 'powered by Emotion API',
-              style: { "color": "#bbbbbb" }
+            tooltip: {
+              pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+              pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                borderColor: 'transparent',
+                dataLabels: {
+                  enabled: true,
+                  format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                  style: {
+                    color: 'white'
+                  }
+                }
+              }
+            },
+            series: [{
+              name: 'Emotions',
+              colorByPoint: true,
+              data: data.avg_scores
+            }]
+	  }); 
+          Highcharts.chart('container-' + id, {
+            title: {
+              text: "Emotional changes",
+              style: { "color": "#ffffff", "fontSize": "18px" }
             },
             xAxis: {
               labels: {
@@ -195,7 +222,11 @@ $(document).ready(function(){
             legend: {
               layout: 'vertical',
               align: 'right',
-              verticalAlign: 'middle'
+              verticalAlign: 'middle',
+              itemStyle: {
+                color: '#fff',
+                fontWeight: 100
+              }
             },
             plotOptions: {
               series: {

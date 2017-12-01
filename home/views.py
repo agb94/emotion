@@ -94,8 +94,14 @@ def emotion(request):
     if request.is_ajax():
         character_id=int(request.GET['character_id'])
         crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
-        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=3)
-        data = json.dumps({ 'emotions': emotions })
+        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=20)
+        avg_scores = []
+        for emotion in emotions:
+            avg_scores.append((sum(list(map(lambda d: d[1], emotion['data'])))/len(emotion['data']), emotion['name']))
+        avg_scores.sort()
+        avg_scores.reverse()
+        avg_scores = list(map(lambda x: {'name': x[1], 'y': x[0]}, avg_scores))
+        data = json.dumps({ 'emotions': emotions, 'avg_scores': avg_scores })
         return HttpResponse(data, content_type='application/json')
     else:
         if 'character_id' in request.GET:
