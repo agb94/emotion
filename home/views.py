@@ -5,6 +5,7 @@ import json
 import os
 import mydetective
 import shutil
+import time
 
 # Create your views here.
 def index(request):
@@ -14,6 +15,7 @@ def analysis(request):
     if request.is_ajax():
         crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
         video_file_path = request.GET['videoFile']
+        sleep = True
         if video_file_path.endswith('.tsv.oracle'):
             metadata_file_path = video_file_path.replace('.tsv.oracle', '.tsv')
             shutil.copyfile(video_file_path, metadata_file_path)
@@ -32,10 +34,13 @@ def analysis(request):
                     metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             K = len(set((map(lambda r: r['character_id'], metadata))) - {-1})
-            if K == 0: 
+            if K == 0:
+                sleep = False
                 K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
+        if sleep:
+            time.sleep(10)
         overview, clip = mydetective.get_overview_and_clip(metadata_file_path, new=True)
         data = json.dumps({ 'K': K, 'metadata_file_path': metadata_file_path, 'characters': metadata })
         return HttpResponse(data, content_type='application/json')
@@ -94,7 +99,7 @@ def emotion(request):
     if request.is_ajax():
         character_id=int(request.GET['character_id'])
         crop_root_dir = crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
-        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir, limit=20)
+        emotions = mydetective.characters_emotion(metadata_file_path, character_id, crop_root_dir=crop_root_dir)
         avg_scores = []
         for emotion in emotions:
             avg_scores.append((sum(list(map(lambda d: d[1], emotion['data'])))/len(emotion['data']), emotion['name']))
