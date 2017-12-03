@@ -29,7 +29,7 @@ def character_analyzer(metadata_path, frame_interval=30):
     centroid_image = { i: '' for i in char_ids }
     
     previous_id = -1
-    threshold = 20
+    threshold = 30
 
     with open(overview_path, "w") as overview, open(clip_path, "w") as clip:
         for row in filter(lambda r: r['character_id'] != -1, metadata):
