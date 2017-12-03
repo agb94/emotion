@@ -16,6 +16,7 @@ def analysis(request):
         crop_root_dir = 'home' + os.path.join(settings.STATIC_URL, 'crop')
         video_file_path = request.GET['videoFile']
         sleep = True
+        collecting_time, clustering_time = 0, 0
         if video_file_path.endswith('.tsv.oracle'):
             metadata_file_path = video_file_path.replace('.tsv.oracle', '.tsv')
             shutil.copyfile(video_file_path, metadata_file_path)
@@ -28,24 +29,25 @@ def analysis(request):
             else:
                 interval_sec = int(request.GET['interval'])
                 metadata_file_path = mydetective.get_metadata_file_path(video_file_path, interval_sec=interval_sec)
-                if os.path.exists(metadata_file_path+'.oracle'):
-                    shutil.copyfile(metadata_file_path+'.oracle', metadata_file_path)
-                if not os.path.exists(metadata_file_path):
-                    start = time.time()
-                    metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
-                    print ("Collect time: " + str(time.time() - start))
+                start = time.time()
+                metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
+                collecting_time = time.time() - start
+                print ("Collecting Time: {}".format(collecting_time))
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             # check if the metadata file is already clustred or not
             K = len(set((map(lambda r: r['character_id'], metadata))) - {-1})
             if K == 0:
                 sleep = False
+                start = time.time()
                 K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
+                clustering_time = time.time() - start
+                print ("Clustering Time: {}".format(clustering_time))
             metadata = mydetective.parse_metadata_file(metadata_file_path)
+            if os.path.exists(metadata_file_path+'.oracle'):
+                shutil.copyfile(metadata_file_path+'.oracle', metadata_file_path)
             metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
-        if sleep:
-            time.sleep(10)
         overview, clip = mydetective.get_overview_and_clip(metadata_file_path, new=True)
-        data = json.dumps({ 'K': K, 'metadata_file_path': metadata_file_path, 'characters': metadata })
+        data = json.dumps({ 'K': K, 'metadata_file_path': metadata_file_path, 'characters': metadata, 'collecting_time': round(collecting_time,1), 'clustering_time': round(clustering_time,1) })
         return HttpResponse(data, content_type='application/json')
     else:
         if request.method == "POST":

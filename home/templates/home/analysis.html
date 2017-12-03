@@ -15,7 +15,12 @@
         {% include "home/tab.html" %}
       </div>
       <div class="col-md-8">
-        <h3 style="font-weight:100;"><span id="K"></span> characters are detected.</h3>
+        <div class="alert alert-info" role="alert">
+          <h4 class="alert-heading">Finished!</h4>
+          <p>Total <b><span id="K"></span></b> characters are detected.</p>
+          <hr>
+          <p class="mb-0">The collecting process took <span id="collecting-time"></span> seconds and the clustering process took <span id="clustering-time"></span> seconds. You can rename or delete the characters (Optional). If you have finished renaming and deleting, select a menu on the left to see the analysis results.</p>
+        </div>
         <table class="table" id="characters-info">
           <tr>
             <th>
@@ -84,6 +89,8 @@ $(document).ready(function(){
       dataType:'json',
       success : function(data) {
         kField.text(data['K']);
+        $('#collecting-time').text(data['collecting_time']);
+        $('#clustering-time').text(data['clustering_time']);
         params = '';
         params += 'videoFile=' + escape('{{ videoFile }}');
         metadata_file_path = data['metadata_file_path'];
