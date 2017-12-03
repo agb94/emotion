@@ -6,6 +6,9 @@ import os, time, sys, util, random
 
 INTERVAL = 3.0 # msec
 KEYS = [
+    'c91d5e4486e6446a9a04b75b0b11b920',
+    '64c05ee8e0a64fd9ad8b3067eef1ab0e',
+    '95b97be8158446d7a689152ff83be33f',
     '6f2f9a102d684ba5a7d846fe3059e2da',
     'ea991c1ce78b4f1fae6bb9abbfa0b5ac',
     '21c1a6e336214f2dbd1d942afa11f20d',
@@ -69,9 +72,11 @@ def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit
     if limit:
         count = 0
     emotions = {}
+    first = True
     for i, row in enumerate(metadata):
         img_path = os.path.join(crop_root_dir, row['image_file_path'])
-        key = KEYS[i % len(KEYS)]
+        key = KEYS[i/20]
+        # key = KEYS[i % len(KEYS)]
         headers['Ocp-Apim-Subscription-Key'] = key
         emotion = get_emotion(img_path)
         if emotion:
@@ -83,9 +88,9 @@ def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit
             count += 1
             if count == limit:
                 break
-        if i + 1 != len(metadata):
+        # if i + 1 != len(metadata):
             # last
-            time.sleep(interval)
+            # time.sleep(interval)
     series = list()
     for feature in emotions:
         series.append({ 'name': feature, 'data': emotions[feature]})
