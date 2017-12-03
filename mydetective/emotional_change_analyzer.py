@@ -57,7 +57,7 @@ def get_emotion(image_file_path):
         conn.close()
         return eval(data)
     except Exception as e:
-        print("[Errno {0}] {1}".format(e.errno, e.strerror))
+        print("[Errno] {}".format(e))
         return None
 
 def characters_emotion(metadata_path, character_id, crop_root_dir="crop/", limit=None):

@@ -1,6 +1,6 @@
 # emotion
 
-Command line
+## Command line
 ```
 python main.py [video_name] —-interval [time_interval(default: 1)]
 ```
@@ -23,7 +23,7 @@ python main.py [video_file] -K [the_number_of_clusters]
 ```
 
 
-GUI
+## GUI
 ```
 python manage.py runserver
 ```
@@ -41,5 +41,13 @@ If you want an application format, type
 python view.py
 ```
 
+## Other infos
 Video files should be located in /emotion directory.
 
+For testing, you can use the oracle files in the root directory.
+(Please ask me to send you the sample videos.. it's too large to upload here. )
+
+Meta parameters
+  - Scene segment threshold
+  - frame interval
+  - ...
