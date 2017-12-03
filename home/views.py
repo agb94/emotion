@@ -31,8 +31,11 @@ def analysis(request):
                 if os.path.exists(metadata_file_path+'.oracle'):
                     shutil.copyfile(metadata_file_path+'.oracle', metadata_file_path)
                 if not os.path.exists(metadata_file_path):
+                    start = time.time()
                     metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
+                    print ("Collect time: " + str(time.time() - start))
             metadata = mydetective.parse_metadata_file(metadata_file_path)
+            # check if the metadata file is already clustred or not
             K = len(set((map(lambda r: r['character_id'], metadata))) - {-1})
             if K == 0:
                 sleep = False
