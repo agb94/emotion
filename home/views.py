@@ -28,6 +28,8 @@ def analysis(request):
                 metadata_file_path = video_file_path
             else:
                 interval_sec = int(request.GET['interval'])
+                if interval_sec >= 25 and interval_sec <= 35:
+                    interval_sec = 30
                 metadata_file_path = mydetective.get_metadata_file_path(video_file_path, interval_sec=interval_sec)
                 start = time.time()
                 metadata_file_path = mydetective.collect(video_file_path, interval_sec=interval_sec, crop_root_dir=crop_root_dir)
