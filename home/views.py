@@ -28,6 +28,8 @@ def analysis(request):
                 metadata_file_path = video_file_path
             else:
                 interval_sec = int(request.GET['interval'])
+                if interval_sec < 5:
+                    interval_sec = 1
                 if interval_sec >= 5 and interval_sec <= 10:
                     interval_sec = 5
                 if interval_sec >= 25 and interval_sec <= 35:
