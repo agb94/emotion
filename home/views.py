@@ -42,8 +42,8 @@ def analysis(request):
                 K = mydetective.cluster(metadata_file_path, crop_root_dir=crop_root_dir)
                 clustering_time = time.time() - start
                 print ("Clustering Time: {}".format(clustering_time))
-            if os.path.exists(metadata_file_path+'.oracle'):
-                shutil.copyfile(metadata_file_path+'.oracle', metadata_file_path)
+            if os.path.exists(os.path.join('orc', metadata_file_path+'.oracle')):
+                shutil.copyfile(os.path.join('orc', metadata_file_path+'.oracle'), metadata_file_path)
             metadata = mydetective.parse_metadata_file(metadata_file_path)
             K = len(set((map(lambda r: r['character_id'], metadata))) - {-1})
             metadata = sorted(list(filter(lambda d: d['centroid'], metadata)), key=lambda d: d['character_id'])
